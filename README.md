@@ -39,10 +39,12 @@ It pairs a responsive **frontend** for data entry/visualisation with a lightweig
 
 ### 1) Start the backend (Flask)
 
+```
 (optional) activate venv first
 source .venv/bin/activate      # Windows: .venv\Scripts\activate
 pip install Flask flask-cors   # first time only
 python app.py
+```
 
 ### 2) Open the frontend
 
