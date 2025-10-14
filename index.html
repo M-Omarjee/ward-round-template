@@ -3,149 +3,435 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Smart Ward Round Template</title>
-    <!-- Load Tailwind CSS -->
+    <title>Ward Round Documentation Template</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        /* Custom styles to ensure the container is readable and responsive */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
         body {
             font-family: 'Inter', sans-serif;
-            background-color: #f7f7f7;
+            background-color: #f4f6f9; /* Light background */
         }
-        main {
-            max-width: 1000px;
+        .container {
+            max-width: 1200px;
             margin: 0 auto;
-            padding: 2rem;
-        }
-        h1 {
-            border-bottom: 2px solid #e5e7eb;
-            padding-bottom: 0.5rem;
-            margin-bottom: 1.5rem;
         }
         .section-header {
-            margin-top: 1.5rem;
-            margin-bottom: 1rem;
+            color: #1e40af; /* Tailwind blue-700 equivalent */
+            border-bottom: 2px solid #eff6ff; /* Tailwind blue-50 equivalent */
             padding-bottom: 0.5rem;
-            border-bottom: 1px solid #d1d5db;
-        }
-        textarea, input[type="text"] {
-            resize: vertical;
-            min-height: 80px;
-            width: 100%;
-        }
-        /* Style for the Exam fields to appear side-by-side on desktop */
-        .exam-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 1rem;
-        }
-        .exam-field {
             margin-bottom: 1rem;
         }
-        /* Style for annotation canvases */
-        .annotation-container {
-            border: 1px solid #ccc;
-            border-radius: 0.375rem; /* rounded-md */
-            background-color: #fff;
-            position: relative;
+        canvas {
+            touch-action: none; /* Disable default touch actions to allow drawing */
+            width: 100%;
+            height: 100%;
+            background-color: #ffffff;
+            border-radius: 0.5rem;
         }
-        .annotation-canvas {
-            touch-action: none; /* Disable default touch actions for drawing */
+        textarea {
+            resize: vertical;
         }
     </style>
 </head>
 <body>
-    <header class="bg-indigo-700 text-white shadow-lg">
-        <div class="max-w-7xl mx-auto py-4 px-4 sm:px-6 lg:px-8">
-            <h1 class="text-3xl font-bold border-none mb-0">Smart Ward Round Template</h1>
-            <p class="text-indigo-200 text-sm">A structured template with AI-assisted clinical summarization.</p>
-        </div>
-    </header>
+    <main class="container py-8 px-4 sm:px-6 lg:px-8">
+        <header class="mb-8">
+            <h1 class="text-4xl font-bold text-gray-800">Ward Round Template</h1>
+            <p id="timestamp-output" class="text-sm text-gray-500 mt-1">Documented on: (Loading...)</p>
+        </header>
 
-    <main class="py-12 px-4 sm:px-6 lg:px-8">
-        <!-- 1. PATIENT DEMOGRAPHICS / REASON FOR ADMISSION -->
-        <section class="mb-8 p-6 bg-white rounded-lg shadow-md">
-            <h2 class="text-2xl font-semibold text-gray-800 section-header">1. Handoff & Admission Details</h2>
-            <div class="space-y-4">
+        <!-- 1. Patient Demographics & Background -->
+        <section class="mb-8 p-6 bg-white rounded-lg shadow-lg">
+            <h2 class="text-2xl font-semibold section-header">1. Patient Details & Admission Summary</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <label class="block">
-                    <span class="text-lg font-medium text-gray-700">Patient Name / Patient ID:</span>
-                    <input type="text" id="patient-info" class="mt-1 block w-full border border-gray-300 rounded-md p-2 focus:border-indigo-500 focus:ring focus:ring-indigo-500 focus:ring-opacity-50" placeholder="e.g., A. Johnson (Patient ID: 123456)">
+                    <span class="text-lg font-medium text-gray-700">Patient Name / ID:</span>
+                    <input type="text" class="mt-1 block w-full border border-gray-300 rounded-md p-2 focus:ring-blue-500 focus:border-blue-500" placeholder="e.g., Jane Doe, HN: 123456789">
                 </label>
                 <label class="block">
-                    <span class="text-lg font-medium text-gray-700">Reason for Admission (Brief):</span>
-                    <textarea id="admission-reason" rows="3" class="mt-1 block w-full border border-gray-300 rounded-md p-2 focus:border-indigo-500 focus:ring focus:ring-indigo-500 focus:ring-opacity-50" placeholder="e.g., Cellulitis of lower limb, admitted 3 days ago."></textarea>
+                    <span class="text-lg font-medium text-gray-700">DOB / Age / Location:</span>
+                    <input type="text" class="mt-1 block w-full border border-gray-300 rounded-md p-2 focus:ring-blue-500 focus:border-blue-500" placeholder="e.g., 01/01/1950, 75 years, Ward A Bed 12">
                 </label>
             </div>
-        </section>
-
-        <!-- 2. CURRENT UPDATES (AI SUMMARIZATION SECTION) -->
-        <section class="mb-8 p-6 bg-white rounded-lg shadow-md">
-            <h2 class="text-2xl font-semibold text-gray-800 section-header">2. Daily Notes & AI Summarization</h2>
-            <label class="block">
-                <span class="text-lg font-medium text-gray-700">New Clinical Updates (Notes for AI):</span>
-                <textarea id="current-notes" rows="8" class="mt-1 block w-full border border-gray-300 rounded-md p-2 focus:border-indigo-500 focus:ring focus:ring-indigo-500 focus:ring-opacity-50" placeholder="Enter new vital signs, nursing notes, lab results, and team updates here."></textarea>
+            <label class="block mt-4">
+                <span class="text-lg font-medium text-gray-700">Reason for Admission (Dx):</span>
+                <textarea rows="3" class="mt-1 block w-full border border-gray-300 rounded-md p-2 focus:ring-blue-500 focus:border-blue-500" placeholder="e.g., Community Acquired Pneumonia (CAP) - Admitted 3 days ago."></textarea>
             </label>
-            <div class="mt-4">
-                <button id="summarize-btn" class="px-4 py-2 bg-green-600 text-white font-semibold rounded-lg shadow-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-opacity-75 transition duration-150 ease-in-out">
-                    Get AI Summary
-                </button>
-            </div>
-            <!-- Output area for the summary -->
-            <div id="summary-output"></div>
         </section>
 
-        <!-- 3. EXAMINATION -->
-        <section class="mb-8 p-6 bg-white rounded-lg shadow-md">
-            <h2 class="text-2xl font-semibold text-gray-800 section-header">3. Examination</h2>
-            <div class="exam-grid">
-                <div class="exam-field">
-                    <label class="block text-sm font-medium text-gray-700 mb-1">General / Vitals:</label>
-                    <textarea id="exam-general" rows="3" class="block w-full border border-gray-300 rounded-md p-2" placeholder="e.g., Awake, alert, comfortable. Vitals stable."></textarea>
-                </div>
-                <div class="exam-field">
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Cardiovascular (CVS):</label>
-                    <textarea id="exam-cvs" rows="3" class="block w-full border border-gray-300 rounded-md p-2" placeholder="e.g., S1/S2 dual rhythm, no murmurs, Cap refill < 2s."></textarea>
-                </div>
-                <div class="exam-field col-span-full md:col-span-1">
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Respiratory (Lungs):</label>
-                    <div class="annotation-container">
-                        <canvas id="canvas-lungs" class="annotation-canvas" width="300" height="300"></canvas>
-                    </div>
-                </div>
-                <div class="exam-field col-span-full md:col-span-1">
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Abdomen (ABD):</label>
-                    <div class="annotation-container">
-                        <canvas id="canvas-abdomen" class="annotation-canvas" width="300" height="300"></canvas>
-                    </div>
-                </div>
-                <div class="exam-field">
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Neurology (Neuro):</label>
-                    <textarea id="exam-neuro" rows="3" class="block w-full border border-gray-300 rounded-md p-2" placeholder="e.g., GCS 15. Moves all four. No new deficits."></textarea>
-                </div>
-                <div class="exam-field">
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Specific/Local Exam (Legs):</label>
-                    <div class="annotation-container">
-                        <canvas id="canvas-legs" class="annotation-canvas" width="300" height="300"></canvas>
-                    </div>
-                </div>
+        <!-- 2. Daily Progress & AI Summarization -->
+        <section class="mb-8 p-6 bg-white rounded-lg shadow-lg">
+            <h2 class="text-2xl font-semibold section-header">2. Daily Progress & Clinical Notes</h2>
+            <label class="block mb-2">
+                <span class="text-lg font-medium text-gray-700">Subjective & Objective Data:</span>
+                <textarea id="current-notes" rows="8" class="mt-1 block w-full border border-gray-300 rounded-md p-3 focus:ring-blue-500 focus:border-blue-500" placeholder="e.g., Patient reports feeling less breathless. Afebrile. Vitals stable. Labs pending."></textarea>
+            </label>
+            
+            <button id="summarize-btn" class="mt-4 px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg shadow-md hover:bg-blue-700 transition duration-150 ease-in-out">
+                Generate/Refresh AI Summary
+            </button>
+
+            <div id="summary-output">
+                <p class="mt-4 p-3 bg-gray-100 text-gray-600 rounded-md">The AI summary will appear here after clicking 'Generate/Refresh AI Summary'.</p>
             </div>
         </section>
 
-        <!-- 4. PLAN / MANAGEMENT -->
-        <section class="mb-8 p-6 bg-white rounded-lg shadow-md">
-            <h2 class="text-2xl font-semibold text-gray-800 section-header">4. Plan / Management</h2>
+        <!-- 3. Systems Review / Examination -->
+        <h2 class="text-2xl font-semibold section-header mt-8">3. Systems Review / Examination</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+            
+            <!-- Cardiovascular -->
+            <div class="p-6 bg-white rounded-lg shadow-lg">
+                <h3 class="text-xl font-medium text-gray-800 mb-3">Cardiovascular (CVS):</h3>
+                <textarea rows="4" class="mt-1 block w-full border border-gray-300 rounded-md p-2" placeholder="e.g., S1/S2 dual rhythm, no murmurs. Cap refill < 2s. JVP flat."></textarea>
+            </div>
+            
+            <!-- Respiratory -->
+            <div class="p-6 bg-white rounded-lg shadow-lg">
+                <h3 class="text-xl font-medium text-gray-800 mb-3">Respiratory (Lungs):</h3>
+                <div class="canvas-container w-full aspect-square border border-gray-300 rounded-lg p-2 flex justify-center items-center">
+                    <canvas id="canvas-lungs" class="bg-gray-50"></canvas>
+                </div>
+                <textarea rows="2" class="mt-3 block w-full border border-gray-300 rounded-md p-2" placeholder="e.g., Clear to auscultation bilaterally. No crackles/wheeze."></textarea>
+            </div>
+            
+            <!-- Abdomen -->
+            <div class="p-6 bg-white rounded-lg shadow-lg">
+                <h3 class="text-xl font-medium text-gray-800 mb-3">Gastrointestinal (Abdomen):</h3>
+                <div class="canvas-container w-full aspect-square border border-gray-300 rounded-lg p-2 flex justify-center items-center">
+                    <canvas id="canvas-abdomen" class="bg-gray-50"></canvas>
+                </div>
+                <textarea rows="2" class="mt-3 block w-full border border-gray-300 rounded-md p-2" placeholder="e.g., Soft, non-tender. Bowel sounds present. Nausea settling."></textarea>
+            </div>
+
+            <!-- Neurology -->
+            <div class="p-6 bg-white rounded-lg shadow-lg">
+                <h3 class="text-xl font-medium text-gray-800 mb-3">Neurology (Neuro):</h3>
+                <textarea rows="4" class="mt-1 block w-full border border-gray-300 rounded-md p-2" placeholder="e.g., GCS 15. Moves all four. No new deficits."></textarea>
+            </div>
+            
+            <!-- Specific/Local Exam -->
+            <div class="p-6 bg-white rounded-lg shadow-lg">
+                <h3 class="text-xl font-medium text-gray-800 mb-3">Lower Limbs (Vascular/Motor):</h3>
+                <div class="canvas-container w-full aspect-square border border-gray-300 rounded-lg p-2 flex justify-center items-center">
+                    <canvas id="canvas-legs" class="bg-gray-50"></canvas>
+                </div>
+                <textarea rows="2" class="mt-3 block w-full border border-gray-300 rounded-md p-2" placeholder="e.g., Peripheral pulses equal and palpable. No pitting edema. Capillary refill < 2s."></textarea>
+            </div>
+            
+             <!-- Other Systems -->
+            <div class="p-6 bg-white rounded-lg shadow-lg">
+                <h3 class="text-xl font-medium text-gray-800 mb-3">Other Systems / Local Review:</h3>
+                <textarea rows="6" class="mt-1 block w-full border border-gray-300 rounded-md p-2" placeholder="e.g., Wound dressing dry and intact. No cellulitis. Urine output adequate."></textarea>
+            </div>
+        </div>
+        
+        <!-- 4. Plan / Management & Sign-off -->
+        <section class="mb-8 p-6 bg-white rounded-lg shadow-lg">
+            <h2 class="text-2xl font-semibold section-header">4. Plan / Management</h2>
             <label class="block">
                 <span class="text-lg font-medium text-gray-700">Today's Goals & Plan:</span>
-                <textarea id="plan-management" rows="6" class="mt-1 block w-full border border-gray-300 rounded-md p-2 focus:border-indigo-500 focus:ring focus:ring-indigo-500 focus:ring-opacity-50" placeholder="1. Vitals q4h, I/O monitoring. 2. Continue IV Antibiotic X. 3. Chase blood cultures, review results post-round. 4. Provisional discharge planning for tomorrow."></textarea>
+                <textarea id="plan-management" rows="6" class="mt-1 block w-full border border-gray-300 rounded-md p-2 focus:border-indigo-500 focus:ring-indigo-500" placeholder="e.g., 1. Continue IV fluids... 2. Discuss discharge planning... 3. Follow up bloods at 10 AM."></textarea>
             </label>
+
+            <!-- SIGN OFF BLOCK RESTORED -->
+            <div class="mt-6 pt-4 border-t border-gray-200 grid grid-cols-1 md:grid-cols-2 gap-4">
+                <label class="block">
+                    <span class="text-lg font-medium text-gray-700">Sign (Name / Signature):</span>
+                    <input type="text" class="mt-1 block w-full border border-gray-300 rounded-md p-2 focus:ring-blue-500 focus:border-blue-500" placeholder="e.g., Dr. A. Smith">
+                </label>
+                <label class="block">
+                    <span class="text-lg font-medium text-gray-700">Grade / Role:</span>
+                    <input type="text" class="mt-1 block w-full border border-gray-300 rounded-md p-2 focus:ring-blue-500 focus:border-blue-500" placeholder="e.g., SHO / Registrar">
+                </label>
+            </div>
         </section>
-        
-        <footer class="text-center text-gray-500 text-sm mt-8">
+
+        <footer class="text-center text-gray-500 mt-8 text-sm">
             Ward Round Template by Gemini
         </footer>
     </main>
 
-    <!-- The script must be linked correctly at the end of the body -->
-    <script src="script.js"></script> 
+    <!--
+        START OF EMBEDDED JAVASCRIPT
+        This code is included directly in the HTML to ensure the drawings and functionality work instantly.
+    -->
+    <script>
+        /**
+         * Smart Ward Round Template - JavaScript Logic
+         * This script handles Canvas drawing for anatomical diagrams and AI summarization calls.
+         * All anatomical drawings are generated directly via the Canvas API.
+         */
+
+        // --- Configuration ---
+        // Placeholder for the API Key - will be provided by the runtime environment
+        const apiKey = ""; 
+        const model = "gemini-2.5-flash-preview-05-20";
+        const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
+
+        // --- Drawing Utilities ---
+        const drawCircle = (ctx, x, y, radius, color = '#1e40af') => {
+            ctx.beginPath();
+            ctx.arc(x, y, radius, 0, Math.PI * 2, true);
+            ctx.fillStyle = color;
+            ctx.fill();
+            ctx.strokeStyle = '#374151';
+            ctx.lineWidth = 1;
+            ctx.stroke();
+        };
+
+        const drawOutline = (ctx, path, closePath = true) => {
+            ctx.beginPath();
+            path(ctx);
+            if (closePath) {
+                ctx.closePath();
+            }
+            ctx.strokeStyle = '#374151'; // Dark gray outline
+            ctx.lineWidth = 2;
+            ctx.stroke();
+        };
+
+        // --- Anatomical Drawing Functions (FINALIZED SHAPES) ---
+
+        /**
+         * Draws two identical, mirrored lung shapes without the cardiac notch (Symmetrical, Organ-like).
+         */
+        function drawLungs(ctx, width, height) {
+            ctx.clearRect(0, 0, width, height);
+
+            const centerX = width / 2;
+            const topY = height * 0.1;
+            const bottomY = height * 0.9;
+            const innerX = centerX - width * 0.02;
+            const outerWidth = width * 0.45;
+            const curveHeight = height * 0.4;
+            
+            const drawSingleLung = (offsetX, scaleX) => (c) => {
+                const x = centerX + offsetX;
+                const finalOuterX = x + (outerWidth * scaleX);
+
+                // Start at bottom inner point
+                c.moveTo(innerX, bottomY);
+                
+                // Draw bottom edge to outer side (flat/slight curve)
+                c.lineTo(finalOuterX, bottomY);
+
+                // Draw outer edge with a smooth curve to the top
+                c.bezierCurveTo(
+                    finalOuterX + (10 * scaleX), bottomY - curveHeight * 0.5, // Control point for subtle curve
+                    finalOuterX - (10 * scaleX), topY + height * 0.1,         // Control point for subtle curve
+                    x, topY                                                   // Apex
+                );
+
+                // Draw inner (medial) edge slightly curved down
+                c.bezierCurveTo(
+                    innerX, topY + height * 0.2,
+                    innerX, bottomY - height * 0.2,
+                    innerX, bottomY
+                );
+            };
+
+            // Patient's Right Lung (Viewer's Left)
+            ctx.save();
+            // Start left of center, scaleX is -1 to draw the curve to the left
+            drawOutline(ctx, drawSingleLung(-outerWidth / 2 - width * 0.01, -1));
+            ctx.restore();
+
+            // Patient's Left Lung (Viewer's Right)
+            ctx.save();
+            // Start right of center, scaleX is 1 to draw the curve to the right
+            drawOutline(ctx, drawSingleLung(outerWidth / 2 + width * 0.01, 1));
+            ctx.restore();
+        }
+
+
+        /**
+         * Draws a hexagonal abdomen outline with a small central umbilicus (FINALIZED).
+         */
+        function drawAbdomen(ctx, width, height) {
+            ctx.clearRect(0, 0, width, height);
+
+            const rectX = width * 0.2;
+            const rectY = height * 0.2;
+            const rectW = width * 0.6;
+            const rectH = height * 0.6;
+
+            const umbilicusX = width / 2;
+            const umbilicusY = height / 2;
+            const umbilicusRadius = 5;
+
+            const path = (c) => {
+                // Hexagon shape 
+                c.moveTo(rectX + rectW / 4, rectY);                  
+                c.lineTo(rectX + rectW * 3 / 4, rectY);              
+                c.lineTo(rectX + rectW, rectY + rectH / 4);          
+                c.lineTo(rectX + rectW, rectY + rectH * 3 / 4);      
+                c.lineTo(rectX + rectW * 3 / 4, rectY + rectH);      
+                c.lineTo(rectX + rectW / 4, rectY + rectH);          
+                c.lineTo(rectX, rectY + rectH * 3 / 4);              
+                c.lineTo(rectX, rectY + rectH / 4);                  
+            };
+            
+            drawOutline(ctx, path);
+            drawCircle(ctx, umbilicusX, umbilicusY, umbilicusRadius, '#374151'); 
+        }
+
+        /**
+         * Draws two simple, separate leg shapes (upper thighs) (FINALIZED).
+         */
+        function drawLegs(ctx, width, height) {
+            ctx.clearRect(0, 0, width, height);
+
+            const legWidth = width * 0.35;
+            const legHeight = height * 0.7;
+            const gap = width * 0.05;
+            const topY = height * 0.15;
+
+            // Leg 1 (Viewer's Left)
+            const leg1X = width / 2 - legWidth - gap / 2;
+            const path1 = (c) => {
+                c.rect(leg1X, topY, legWidth, legHeight);
+            };
+            drawOutline(ctx, path1, false);
+
+            // Leg 2 (Viewer's Right)
+            const leg2X = width / 2 + gap / 2;
+            const path2 = (c) => {
+                c.rect(leg2X, topY, legWidth, legHeight);
+            };
+            drawOutline(ctx, path2, false);
+        }
+
+
+        // --- Main Initialization and Event Handlers ---
+
+        function resizeCanvas(canvas) {
+            const container = canvas.parentElement;
+            // Use aspect-square sizing
+            const size = Math.min(container.clientWidth, container.clientHeight); 
+            canvas.width = size;
+            canvas.height = size;
+            return size;
+        }
+
+        function redrawAll() {
+            const canvases = [
+                { id: 'canvas-lungs', draw: drawLungs },
+                { id: 'canvas-abdomen', draw: drawAbdomen },
+                { id: 'canvas-legs', draw: drawLegs }
+            ];
+
+            canvases.forEach(({ id, draw }) => {
+                const canvas = document.getElementById(id);
+                if (canvas) {
+                    const ctx = canvas.getContext('2d');
+                    const size = resizeCanvas(canvas);
+                    draw(ctx, size, size);
+                }
+            });
+        }
+
+        async function handleSummarization() {
+            const notesInput = document.getElementById('current-notes');
+            const summaryOutput = document.getElementById('summary-output');
+            const summarizeBtn = document.getElementById('summarize-btn');
+            
+            const notes = notesInput.value.trim();
+
+            if (!notes) {
+                summaryOutput.innerHTML = '<p class="mt-4 p-3 bg-red-100 text-red-700 rounded-md">Please enter clinical notes before generating a summary.</p>';
+                return;
+            }
+
+            summarizeBtn.disabled = true;
+            summarizeBtn.textContent = 'Generating Summary...';
+            summaryOutput.innerHTML = '<p class="mt-4 p-3 bg-yellow-100 text-yellow-700 rounded-md">Processing notes with AI...</p>';
+
+            const systemPrompt = `You are a highly experienced clinician. Review the patient's daily clinical notes provided. Based ONLY on the input, generate a concise, professional, single-paragraph summary suitable for a handover or senior review. Focus on key progress, concerns, and status changes.`;
+            
+            const userQuery = `Summarize the following clinical notes in a single paragraph, focusing on patient status and progress:\n\n---\n${notes}`;
+
+            const payload = {
+                contents: [{ parts: [{ text: userQuery }] }],
+                systemInstruction: {
+                    parts: [{ text: systemPrompt }]
+                },
+            };
+
+            const maxRetries = 3;
+            let response;
+
+            for (let attempt = 0; attempt < maxRetries; attempt++) {
+                try {
+                    response = await fetch(apiUrl, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+
+                    if (response.ok) {
+                        break; // Success!
+                    }
+                    
+                    // Wait with exponential backoff before retrying
+                    await new Promise(resolve => setTimeout(resolve, Math.pow(2, attempt) * 1000));
+
+                } catch (error) {
+                    console.error(`Attempt ${attempt + 1}: Fetch failed`, error);
+                    // Wait before retrying
+                    await new Promise(resolve => setTimeout(resolve, Math.pow(2, attempt) * 1000));
+                }
+            }
+
+            summarizeBtn.disabled = false;
+            summarizeBtn.textContent = 'Generate/Refresh AI Summary';
+
+            if (!response || !response.ok) {
+                summaryOutput.innerHTML = '<p class="mt-4 p-3 bg-red-100 text-red-700 rounded-md">Error: Could not connect to AI service or response failed.</p>';
+                return;
+            }
+
+            try {
+                const result = await response.json();
+                const text = result.candidates?.[0]?.content?.parts?.[0]?.text;
+
+                if (text) {
+                    summaryOutput.innerHTML = `
+                        <h3 class="text-lg font-medium text-gray-800 mt-4">AI Clinical Summary:</h3>
+                        <p class="mt-2 p-3 bg-green-50 text-green-800 rounded-md whitespace-pre-wrap">${text}</p>
+                    `;
+                } else {
+                     summaryOutput.innerHTML = '<p class="mt-4 p-3 bg-red-100 text-red-700 rounded-md">Error: AI returned an empty or invalid summary.</p>';
+                }
+            } catch (e) {
+                console.error("Error parsing AI response:", e);
+                summaryOutput.innerHTML = '<p class="mt-4 p-3 bg-red-100 text-red-700 rounded-md">Error: Failed to parse AI response.</p>';
+            }
+        }
+
+        function setTimestamp() {
+            const now = new Date();
+            const options = { 
+                weekday: 'short', 
+                year: 'numeric', 
+                month: 'short', 
+                day: 'numeric', 
+                hour: '2-digit', 
+                minute: '2-digit', 
+                second: '2-digit' 
+            };
+            document.getElementById('timestamp-output').textContent = `Documented on: ${now.toLocaleTimeString('en-US', options)}`;
+        }
+
+        // Initial setup on load
+        window.onload = function() {
+            setTimestamp();
+            redrawAll();
+
+            // Event listeners
+            document.getElementById('summarize-btn').addEventListener('click', handleSummarization);
+            window.addEventListener('resize', redrawAll);
+        };
+    </script>
 </body>
 </html>
