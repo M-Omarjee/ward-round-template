@@ -32,6 +32,7 @@ It pairs a responsive **frontend** for data entry/visualisation with a lightweig
 
 .
 ├─ index.html # Frontend: UI + Tailwind + Canvas drawings + fetch() calls
+
 └─ app.py # Backend: Flask API + keyword-prioritised summariser
 
 ## 🚀 How to Run
