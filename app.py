@@ -1,61 +1,56 @@
 # ----------------------------------------------------
-# 1. DEPENDENCIES (Install these first! See D.)
+# 1. Imports and Setup
 # ----------------------------------------------------
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 from transformers import pipeline
 
-# ----------------------------------------------------
-# 2. INITIALIZATION
-# ----------------------------------------------------
 # Initialize the Flask app
 app = Flask(__name__)
-# Enable CORS for development (Allows your HTML/JS to talk to this Python server)
+# Enable CORS for development (Allows your JavaScript to talk to this Python server)
 CORS(app)
 
 # Initialize the Hugging Face summarization pipeline
-# We use a popular, pre-trained model for abstractive summarization
-# NOTE: The first run will download the model, which may take a few minutes.
+# NOTE: This model downloads on the first run, which may take a minute.
 try:
+    # Using BART large CNN for good quality abstractive summarization
     summarizer = pipeline("summarization", model="facebook/bart-large-cnn")
-    print("Summarization model loaded successfully!")
+    print("AI Summarization model loaded successfully!")
 except Exception as e:
+    # Fallback if the model cannot be loaded (e.g., if there's no internet)
     print(f"Error loading model: {e}")
-    # Create a dummy summarizer for testing if the model download fails
-    summarizer = lambda text, **kwargs: [{"summary_text": "Error loading AI model. Try again later."}]
+    summarizer = lambda text, **kwargs: [{"summary_text": "AI model loading failed."}]
 
 
 # ----------------------------------------------------
-# 3. THE API ROUTE
+# 2. The API Route (Endpoint)
 # ----------------------------------------------------
-# Define the endpoint that your JavaScript will call
+# This function runs when the JavaScript sends a POST request to /summarize
 @app.route('/summarize', methods=['POST'])
 def summarize_text():
-    # Expects a JSON payload with a 'text' key
+    # 1. Get text from the front-end
     data = request.get_json()
-    if not data or 'text' not in data:
-        return jsonify({"error": "Missing 'text' in request body"}), 400
+    input_text = data.get('text', '')
 
-    input_text = data['text']
+    if not input_text or len(input_text) < 50:
+        return jsonify({"error": "Please provide at least 50 characters of notes."}), 400
 
-    # Set parameters for the summary generation
-    # You can adjust these for length/quality
+    # 2. Run the AI summarization
     summary_result = summarizer(
         input_text,
-        max_length=150, # Max length of the generated summary
-        min_length=30,  # Min length of the generated summary
-        do_sample=False  # Deterministic generation
+        max_length=150, 
+        min_length=30,  
+        do_sample=False  
     )
 
-    # The result is a list of dictionaries, we extract the text
+    # 3. Extract and return the summary
     summary = summary_result[0]['summary_text']
-
-    # Return the summary as a JSON response to the front-end
+    
     return jsonify({"summary": summary})
 
 # ----------------------------------------------------
-# 4. RUNNING THE APP
+# 3. Run the App
 # ----------------------------------------------------
 if __name__ == '__main__':
-    # Runs the server locally on http://127.0.0.1:5000/
-    app.run(debug=True)
+    # Runs the server locally on port 5000 (http://127.0.0.1:5000/)
+    app.run(debug=True, port=5000)
