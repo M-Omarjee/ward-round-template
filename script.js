@@ -1,58 +1,66 @@
 document.addEventListener('DOMContentLoaded', () => {
-    const summarizeBtn = document.getElementById('summarize-btn');
-    const currentNotes = document.getElementById('current-notes');
+    // FIX: IDs must match the index.html file exactly:
+    // 1. 'current-notes' matches the <textarea>
+    // 2. 'summarize-btn' matches the <button>
+    // 3. 'summary-output' matches the <div> below the button
+    const notesInput = document.getElementById('current-notes');
+    const summarizeButton = document.getElementById('summarize-btn');
     const summaryOutput = document.getElementById('summary-output');
 
-    // The URL for your Python Flask server
-    const API_URL = 'http://127.0.0.1:5000/summarize';
+    summarizeButton.addEventListener('click', async () => {
+        
+        console.log("--- Executing v1.6 Final Request ---"); 
+        
+        const input_text = notesInput.value.trim();
 
-    summarizeBtn.addEventListener('click', async () => {
-        const textToSummarize = currentNotes.value;
-
-        if (textToSummarize.length < 50) {
-            summaryOutput.innerHTML = '<p>Please enter more detailed notes (at least 50 characters) to generate a useful summary.</p>';
+        if (input_text.length < 50) {
+            summaryOutput.innerHTML = '<p class="text-red-500">Please enter at least 50 characters of notes to summarize.</p>';
             return;
         }
 
-        // 1. Show Loading State
-        summaryOutput.innerHTML = '<p>Generating summary... This may take a moment.</p>';
-        summarizeBtn.disabled = true; // Disable button while working
+        summaryOutput.innerHTML = '<p class="text-gray-500">Generating summary...</p>';
 
         try {
-            // 2. Send Data to Python Flask API
-            const response = await fetch(API_URL, {
+            const response = await fetch('http://127.0.0.1:5000/summarize', {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json'
+                    'Content-Type': 'application/json',
                 },
-                // Send the notes as JSON
-                body: JSON.stringify({ text: textToSummarize })
+                body: JSON.stringify({ text: input_text }),
             });
 
-            // Check if the API request was successful
             if (!response.ok) {
-                throw new Error(`HTTP error! Status: ${response.status}`);
+                // If the server responded with an error status (e.g., 400 or 500)
+                const errorData = await response.json();
+                throw new Error(errorData.error || `HTTP error! Status: ${response.status}`);
             }
 
-            // 3. Get the Summary from the Response
             const data = await response.json();
 
             // 4. Display the Result
             if (data.summary) {
+                // NEW LOGIC: Map the array of sentences returned from Python 
+                // to correct HTML <li> elements for proper wrapping.
+                const summaryListHTML = data.summary.map(sentence => 
+                    `<li class="mb-2">${sentence}</li>`
+                ).join('');
+                
                 summaryOutput.innerHTML = `
-                    <h2>AI Summary:</h2>
-                    <p>${data.summary}</p>
+                    <div class="mt-6 p-4 bg-gray-50 rounded-lg shadow-inner">
+                        <h2 class="text-xl font-semibold mb-3 text-indigo-700">Clinical Summary:</h2>
+                        <!-- Use a standard <ul> list (Tailwind: list-disc) to force correct wrapping and ensure text stays inside the box -->
+                        <ul class="list-disc list-inside space-y-2 text-gray-800 leading-relaxed">
+                            ${summaryListHTML}
+                        </ul>
+                    </div>
                 `;
-            } else {
-                summaryOutput.innerHTML = `<p class="error">Error: Could not retrieve summary. ${data.error || ''}</p>`;
+            } else if (data.error) {
+                summaryOutput.innerHTML = `<p class="text-red-500">Error from server: ${data.error}</p>`;
             }
 
         } catch (error) {
-            // Handle any network or server errors
-            summaryOutput.innerHTML = `<p class="error">Connection Error: Could not reach the Python server at ${API_URL}. Is app.py running?</p>`;
-            console.error('Summarization failed:', error);
-        } finally {
-            summarizeBtn.disabled = false; // Re-enable button
+            console.error('Connection Error:', error);
+            summaryOutput.innerHTML = `<p class="text-red-500">Connection Error: Could not reach the Python server at http://127.0.0.1:5000/summarize. Is app.py running? (${error.message})</p>`;
         }
     });
 });
