@@ -1,4 +1,4 @@
-# 🏥 Ward Round Documentation Template
+# 🏥 Ward Round Documentation Template with AI Features
 
 A modern, single-page clinical documentation template optimized for hospital ward rounds.  
 It pairs a responsive **frontend** for data entry/visualisation with a lightweight **Flask API** that generates concise, clinically-prioritised summaries.
