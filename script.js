@@ -1,0 +1,1 @@
+console.log("Template script loaded. Ready for AI integration!");
