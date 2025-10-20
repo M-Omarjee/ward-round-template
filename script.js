@@ -40,61 +40,104 @@ const drawOutline = (ctx, path, closePath = true) => {
  * @param {number} width - Canvas width.
  * @param {number} height - Canvas height.
  */
+f/**
+ * Draws two separate lungs with straight medial edges, flat bases,
+ * and a cardiac notch on the patient's LEFT lung (viewer’s RIGHT).
+ */
 function drawLungs(ctx, width, height) {
-    // Clear canvas
     ctx.clearRect(0, 0, width, height);
-
-    const centerX = width / 2;
-    const neckTop = height * 0.15;
-    const lungHeight = height * 0.7;
-    const lungWidth = width * 0.35;
-    const centralSpacing = width * 0.05;
-
-    // Drawing Path for a single lung (Patient's Right / Viewer's Left)
-    const drawSingleLung = (offsetX) => (c) => {
-        const x = centerX + offsetX;
-        
-        // Start at the rounded top-center point
-        c.moveTo(x, neckTop); 
-        
-        // Curve for the top shoulder/apex
-        c.bezierCurveTo(
-            x + lungWidth * 0.5, neckTop - height * 0.05, // Control 1 (out and up)
-            x + lungWidth, neckTop + height * 0.1,        // Control 2 (out and down)
-            x + lungWidth, neckTop + lungHeight * 0.5     // Mid-side point
-        );
-        
-        // Curve for the outer lower side
-        c.bezierCurveTo(
-            x + lungWidth * 1.1, neckTop + lungHeight * 0.8, // Control 3 (out, bottom curve)
-            x + lungWidth * 0.5, neckTop + lungHeight,       // Control 4 (in, bottom curve)
-            x, neckTop + lungHeight                         // Bottom center point
-        );
-        
-        // Straight line up the medial (inner) side
-        c.lineTo(x, neckTop + lungHeight); 
-        
-        // Inner curve toward the center (mediastinum edge)
-        c.bezierCurveTo(
-            x + centralSpacing * 0.5, neckTop + lungHeight * 0.7, // Control 5 (slightly in)
-            x + centralSpacing * 0.5, neckTop + lungHeight * 0.3, // Control 6 (slightly in)
-            x, neckTop                                           // Back to top center point
-        );
-    };
-
-    // Patient's Right Lung (Viewer's Left)
     ctx.save();
-    ctx.translate(0, 0); // No flip needed
-    drawOutline(ctx, drawSingleLung(-centralSpacing / 2 - lungWidth));
+  
+    // Styling (slightly thicker stroke to match your sketch)
+    ctx.strokeStyle = '#374151';
+    ctx.lineWidth = Math.max(2, Math.floor(width * 0.01));
+  
+    // Layout helpers
+    const center = width / 2;
+    const marginX = width * 0.12;      // how far from canvas edge the outer border sits
+    const gap = width * 0.06;          // gap between the two lungs (mediastinum)
+    const topY = height * 0.12;        // where the apex begins
+    const baseY = height * 0.86;       // flat base
+    const bulge = width * 0.18;        // how rounded the outer side looks
+    const apexLift = height * 0.10;    // roundness of apex
+    const baseCurve = height * 0.06;   // slight roundness along the base
+  
+    // Inner x positions (straight medial edges)
+    const innerRightX = center - gap;  // patient RIGHT lung (viewer’s LEFT)
+    const innerLeftX  = center + gap;  // patient LEFT lung (viewer’s RIGHT)
+  
+    // Outer x positions
+    const outerRightX = marginX;
+    const outerLeftX  = width - marginX;
+  
+    // ---------- RIGHT LUNG (patient's right, viewer's left) ----------
+    ctx.beginPath();
+    // Start at inner base
+    ctx.moveTo(innerRightX, baseY);
+    // Flat base to outer base
+    ctx.lineTo(outerRightX, baseY);
+    // Outer wall up to apex (smooth bulge)
+    ctx.bezierCurveTo(
+      outerRightX - bulge * 0.15, baseY - baseCurve,
+      outerRightX - bulge * 0.30, topY + apexLift * 0.8,
+      innerRightX - gap * 0.15, topY
+    );
+    // Apex back to inner top
+    ctx.bezierCurveTo(
+      innerRightX - gap * 0.05, topY - apexLift * 0.35,
+      innerRightX - gap * 0.02, topY - apexLift * 0.15,
+      innerRightX, topY
+    );
+    // Straight medial edge down to base
+    ctx.lineTo(innerRightX, baseY);
+    ctx.stroke();
+  
+    // ---------- LEFT LUNG (patient's left, viewer's right) with cardiac notch ----------
+    // Notch placement and depth
+    const notchYTop  = topY + height * 0.42;   // where notch begins vertically
+    const notchYBot  = topY + height * 0.62;   // where notch ends vertically
+    const notchIn    = gap * 0.75;             // how far the notch indents
+  
+    ctx.beginPath();
+    // Start at inner base
+    ctx.moveTo(innerLeftX, baseY);
+    // Flat base to outer base
+    ctx.lineTo(outerLeftX, baseY);
+    // Outer wall up to apex (mirror of right)
+    ctx.bezierCurveTo(
+      outerLeftX + bulge * 0.15, baseY - baseCurve,
+      outerLeftX + bulge * 0.30, topY + apexLift * 0.8,
+      innerLeftX + gap * 0.15, topY
+    );
+    // Apex back toward inner top
+    ctx.bezierCurveTo(
+      innerLeftX + gap * 0.05, topY - apexLift * 0.35,
+      innerLeftX + gap * 0.02, topY - apexLift * 0.15,
+      innerLeftX, topY
+    );
+  
+    // --- Cardiac notch along the medial edge ---
+    // Straight down a bit from inner top
+    ctx.lineTo(innerLeftX, notchYTop);
+    // Curve inward (concavity) and back out (two small beziers for a clean notch)
+    ctx.bezierCurveTo(
+      innerLeftX, notchYTop + (notchYBot - notchYTop) * 0.25,
+      innerLeftX - notchIn, notchYTop + (notchYBot - notchYTop) * 0.35,
+      innerLeftX - notchIn, (notchYTop + notchYBot) / 2
+    );
+    ctx.bezierCurveTo(
+      innerLeftX - notchIn, notchYTop + (notchYBot - notchYTop) * 0.70,
+      innerLeftX, notchYBot - (notchYBot - notchYTop) * 0.10,
+      innerLeftX, notchYBot
+    );
+  
+    // Continue straight medial edge down to the base
+    ctx.lineTo(innerLeftX, baseY);
+    ctx.stroke();
+  
     ctx.restore();
-
-    // Patient's Left Lung (Viewer's Right) - Mirroring the drawing
-    ctx.save();
-    ctx.scale(-1, 1); // Flip horizontally
-    ctx.translate(-width, 0); // Translate back to keep it centered
-    drawOutline(ctx, drawSingleLung(-centralSpacing / 2 - lungWidth));
-    ctx.restore();
-}
+  }
+  
 
 /**
  * Draws a hexagonal abdomen outline with a small central umbilicus.

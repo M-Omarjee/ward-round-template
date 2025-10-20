@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ward Round Documentation Template</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" defer></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
         body {
@@ -90,7 +91,30 @@
             <div class="p-6 bg-white rounded-lg shadow-lg">
                 <h3 class="text-xl font-medium text-gray-800 mb-3">Respiratory (Lungs):</h3>
                 <div class="canvas-container w-full aspect-square border border-gray-300 rounded-lg p-2 flex justify-center items-center">
-                    <canvas id="canvas-lungs" class="bg-gray-50"></canvas>
+                    <svg id="svg-lungs" viewBox="0 0 400 400" class="w-full h-full">
+                        <!-- left lung -->
+                        <path id="lung-left"
+                              fill="none"
+                              stroke="#374151"
+                              stroke-width="4"
+                              d="M200,70
+                                 C170,65 140,85 125,120
+                                 C110,155 110,205 120,260
+                                 C130,310 165,330 180,330
+                                 L200,330
+                                 L200,70 Z" />
+                        <!-- right lung -->
+                        <path id="lung-right"
+                              fill="none"
+                              stroke="#374151"
+                              stroke-width="4"
+                              d="M200,70
+                                 C230,65 260,85 275,120
+                                 C290,155 290,205 280,260
+                                 C270,310 235,330 220,330
+                                 L200,330
+                                 L200,70 Z" />
+                      </svg>
                 </div>
                 <textarea rows="2" class="mt-3 block w-full border border-gray-300 rounded-md p-2" placeholder="e.g., Clear to auscultation bilaterally. No crackles/wheeze."></textarea>
             </div>
@@ -194,55 +218,102 @@
         // --- Anatomical Drawing Functions (FINALIZED SHAPES) ---
 
         /**
-         * Draws two identical, mirrored lung shapes without the cardiac notch (Symmetrical, Organ-like).
-         */
-        function drawLungs(ctx, width, height) {
-            ctx.clearRect(0, 0, width, height);
+ * Draws two separate lungs with straight medial edges, flat bases,
+ * and a cardiac notch on the patient's LEFT lung (viewer’s RIGHT).
+ */
+function drawLungs(ctx, width, height) {
+  ctx.clearRect(0, 0, width, height);
+  ctx.save();
 
-            const centerX = width / 2;
-            const topY = height * 0.1;
-            const bottomY = height * 0.9;
-            const innerX = centerX - width * 0.02;
-            const outerWidth = width * 0.45;
-            const curveHeight = height * 0.4;
-            
-            const drawSingleLung = (offsetX, scaleX) => (c) => {
-                const x = centerX + offsetX;
-                const finalOuterX = x + (outerWidth * scaleX);
+  // Styling (slightly thicker stroke to match your sketch)
+  ctx.strokeStyle = '#374151';
+  ctx.lineWidth = Math.max(2, Math.floor(width * 0.01));
 
-                // Start at bottom inner point
-                c.moveTo(innerX, bottomY);
-                
-                // Draw bottom edge to outer side (flat/slight curve)
-                c.lineTo(finalOuterX, bottomY);
+  // Layout helpers
+  const center = width / 2;
+  const marginX = width * 0.12;      // how far from canvas edge the outer border sits
+  const gap = width * 0.06;          // gap between the two lungs (mediastinum)
+  const topY = height * 0.12;        // where the apex begins
+  const baseY = height * 0.86;       // flat base
+  const bulge = width * 0.18;        // how rounded the outer side looks
+  const apexLift = height * 0.10;    // roundness of apex
+  const baseCurve = height * 0.06;   // slight roundness along the base
 
-                // Draw outer edge with a smooth curve to the top
-                c.bezierCurveTo(
-                    finalOuterX + (10 * scaleX), bottomY - curveHeight * 0.5, // Control point for subtle curve
-                    finalOuterX - (10 * scaleX), topY + height * 0.1,         // Control point for subtle curve
-                    x, topY                                                   // Apex
-                );
+  // Inner x positions (straight medial edges)
+  const innerRightX = center - gap;  // patient RIGHT lung (viewer’s LEFT)
+  const innerLeftX  = center + gap;  // patient LEFT lung (viewer’s RIGHT)
 
-                // Draw inner (medial) edge slightly curved down
-                c.bezierCurveTo(
-                    innerX, topY + height * 0.2,
-                    innerX, bottomY - height * 0.2,
-                    innerX, bottomY
-                );
-            };
+  // Outer x positions
+  const outerRightX = marginX;
+  const outerLeftX  = width - marginX;
 
-            // Patient's Right Lung (Viewer's Left)
-            ctx.save();
-            // Start left of center, scaleX is -1 to draw the curve to the left
-            drawOutline(ctx, drawSingleLung(-outerWidth / 2 - width * 0.01, -1));
-            ctx.restore();
+  // ---------- RIGHT LUNG (patient's right, viewer's left) ----------
+  ctx.beginPath();
+  // Start at inner base
+  ctx.moveTo(innerRightX, baseY);
+  // Flat base to outer base
+  ctx.lineTo(outerRightX, baseY);
+  // Outer wall up to apex (smooth bulge)
+  ctx.bezierCurveTo(
+    outerRightX - bulge * 0.15, baseY - baseCurve,
+    outerRightX - bulge * 0.30, topY + apexLift * 0.8,
+    innerRightX - gap * 0.15, topY
+  );
+  // Apex back to inner top
+  ctx.bezierCurveTo(
+    innerRightX - gap * 0.05, topY - apexLift * 0.35,
+    innerRightX - gap * 0.02, topY - apexLift * 0.15,
+    innerRightX, topY
+  );
+  // Straight medial edge down to base
+  ctx.lineTo(innerRightX, baseY);
+  ctx.stroke();
 
-            // Patient's Left Lung (Viewer's Right)
-            ctx.save();
-            // Start right of center, scaleX is 1 to draw the curve to the right
-            drawOutline(ctx, drawSingleLung(outerWidth / 2 + width * 0.01, 1));
-            ctx.restore();
-        }
+  // ---------- LEFT LUNG (patient's left, viewer's right) with cardiac notch ----------
+  // Notch placement and depth
+  const notchYTop  = topY + height * 0.42;   // where notch begins vertically
+  const notchYBot  = topY + height * 0.62;   // where notch ends vertically
+  const notchIn    = gap * 0.75;             // how far the notch indents
+
+  ctx.beginPath();
+  // Start at inner base
+  ctx.moveTo(innerLeftX, baseY);
+  // Flat base to outer base
+  ctx.lineTo(outerLeftX, baseY);
+  // Outer wall up to apex (mirror of right)
+  ctx.bezierCurveTo(
+    outerLeftX + bulge * 0.15, baseY - baseCurve,
+    outerLeftX + bulge * 0.30, topY + apexLift * 0.8,
+    innerLeftX + gap * 0.15, topY
+  );
+  // Apex back toward inner top
+  ctx.bezierCurveTo(
+    innerLeftX + gap * 0.05, topY - apexLift * 0.35,
+    innerLeftX + gap * 0.02, topY - apexLift * 0.15,
+    innerLeftX, topY
+  );
+
+  // --- Cardiac notch along the medial edge ---
+  // Straight down a bit from inner top
+  ctx.lineTo(innerLeftX, notchYTop);
+  // Curve inward (concavity) and back out (two small beziers for a clean notch)
+  ctx.bezierCurveTo(
+    innerLeftX, notchYTop + (notchYBot - notchYTop) * 0.25,
+    innerLeftX - notchIn, notchYTop + (notchYBot - notchYTop) * 0.35,
+    innerLeftX - notchIn, (notchYTop + notchYBot) / 2
+  );
+  ctx.bezierCurveTo(
+    innerLeftX - notchIn, notchYTop + (notchYBot - notchYTop) * 0.70,
+    innerLeftX, notchYBot - (notchYBot - notchYTop) * 0.10,
+    innerLeftX, notchYBot
+  );
+
+  // Continue straight medial edge down to the base
+  ctx.lineTo(innerLeftX, baseY);
+  ctx.stroke();
+
+  ctx.restore();
+}
 
 
         /**
@@ -422,11 +493,30 @@
             };
             document.getElementById('timestamp-output').textContent = `Documented on: ${now.toLocaleTimeString('en-US', options)}`;
         }
+        function animateDraw(selector, duration = 1200, delay = 0) {
+  const els = document.querySelectorAll(selector);
+  els.forEach((el, idx) => {
+    const len = el.getTotalLength();
+    el.style.strokeDasharray = len;
+    el.style.strokeDashoffset = len;
+    anime({
+      targets: el,
+      strokeDashoffset: [len, 0],
+      easing: 'easeInOutSine',
+      duration,
+      delay: delay + idx * 150
+    });
+  });
+}
 
+function animateLungs() {
+  animateDraw('#svg-lungs path', 1400, 100);
+}
         // Initial setup on load
         window.onload = function() {
             setTimestamp();
             redrawAll();
+            animateLungs();
 
             // Event listeners
             document.getElementById('summarize-btn').addEventListener('click', handleSummarization);
