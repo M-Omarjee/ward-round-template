@@ -7,675 +7,223 @@
 <script src="https://cdn.tailwindcss.com"></script>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap');
-body { font-family: 'DM Sans', sans-serif; background: #f0f2f5; }
-.screen { display: none; }
-.screen.active { display: block; }
-.drawing-canvas { position: absolute; top: 0; left: 0; cursor: crosshair; }
-.diagram-container { position: relative; background: #fff; border-radius: 12px; border: 1px solid #e2e8f0; }
-.entry-card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
-.btn-primary { background: #1e40af; color: #fff; transition: all 0.2s; }
-.btn-primary:hover { background: #1e3a8a; }
-.btn-secondary { background: #e2e8f0; color: #334155; transition: all 0.2s; }
-.btn-secondary:hover { background: #cbd5e1; }
-.badge { display: inline-block; padding: 2px 10px; border-radius: 999px; font-size: 12px; font-weight: 500; }
-.fade-in { animation: fadeIn 0.3s ease; }
-@keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
-textarea { resize: vertical; }
-.toolbar-btn { width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; border-radius: 8px; border: 1px solid #e2e8f0; cursor: pointer; transition: all 0.15s; }
-.toolbar-btn:hover { background: #e2e8f0; }
-.toolbar-btn.active { background: #1e40af; color: #fff; border-color: #1e40af; }
+body{font-family:'DM Sans',sans-serif;background:#f0f2f5}.screen{display:none}.screen.active{display:block}.drawing-canvas{position:absolute;top:0;left:0;cursor:crosshair}.diagram-container{position:relative;background:#fff;border-radius:12px;border:1px solid #e2e8f0;overflow:hidden}.entry-card:hover{transform:translateY(-2px);box-shadow:0 4px 12px rgba(0,0,0,.08)}.btn-primary{background:#1e40af;color:#fff;transition:all .2s}.btn-primary:hover{background:#1e3a8a}.btn-secondary{background:#e2e8f0;color:#334155;transition:all .2s}.btn-secondary:hover{background:#cbd5e1}.btn-danger{background:#fee2e2;color:#991b1b;transition:all .2s}.btn-danger:hover{background:#fecaca}.badge{display:inline-block;padding:2px 10px;border-radius:999px;font-size:12px;font-weight:500}.fade-in{animation:fadeIn .3s ease}@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}textarea{resize:vertical}.toolbar-btn{width:32px;height:32px;display:flex;align-items:center;justify-content:center;border-radius:6px;border:1px solid #e2e8f0;cursor:pointer;transition:all .15s}.toolbar-btn:hover{background:#e2e8f0}.toolbar-btn.active{background:#1e40af;color:#fff;border-color:#1e40af}.ai-badge{background:linear-gradient(135deg,#ede9fe,#dbeafe);color:#4338ca;font-size:11px;padding:2px 8px;border-radius:6px;font-weight:600;letter-spacing:.3px}
 </style>
 </head>
 <body class="min-h-screen">
-
-<!-- Header -->
-<header class="bg-white border-b border-gray-200 sticky top-0 z-50">
-  <div class="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between">
-    <div class="flex items-center gap-3 cursor-pointer" onclick="showScreen('patientList')">
-      <div class="w-8 h-8 bg-blue-800 rounded-lg flex items-center justify-center">
-        <svg width="18" height="18" fill="none" stroke="#fff" stroke-width="2" viewBox="0 0 24 24"><path d="M9 12h6M12 9v6M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-      </div>
-      <span class="text-lg font-semibold text-gray-800">Ward Round</span>
-    </div>
-    <nav id="breadcrumb" class="text-sm text-gray-500"></nav>
-  </div>
-</header>
-
+<header class="bg-white border-b border-gray-200 sticky top-0 z-50"><div class="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between"><div class="flex items-center gap-3 cursor-pointer" onclick="showScreen('patientList')"><div class="w-8 h-8 bg-blue-800 rounded-lg flex items-center justify-center"><svg width="18" height="18" fill="none" stroke="#fff" stroke-width="2" viewBox="0 0 24 24"><path d="M9 12h6M12 9v6M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg></div><span class="text-lg font-semibold text-gray-800">Ward Round</span></div></div></header>
 <main class="max-w-5xl mx-auto px-4 py-6">
 
-<!-- ========== SCREEN 1: PATIENT LIST ========== -->
 <div id="screen-patientList" class="screen active fade-in">
-  <div class="flex items-center justify-between mb-6">
-    <div>
-      <h1 class="text-2xl font-bold text-gray-900">My patients</h1>
-      <p class="text-gray-500 text-sm mt-1">Select a patient to view entries or start a new ward round</p>
-    </div>
-    <button onclick="openAddPatientModal()" class="btn-primary px-4 py-2.5 rounded-xl text-sm font-medium flex items-center gap-2">
-      <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
-      Add patient
-    </button>
-  </div>
-  <div id="patientGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"></div>
-  <div id="emptyState" class="hidden text-center py-20">
-    <div class="w-16 h-16 bg-gray-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
-      <svg width="28" height="28" fill="none" stroke="#9ca3af" stroke-width="1.5" viewBox="0 0 24 24"><path d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z"/></svg>
-    </div>
-    <p class="text-gray-500 font-medium">No patients yet</p>
-    <p class="text-gray-400 text-sm mt-1">Add your first patient to get started</p>
-  </div>
+<div class="flex items-center justify-between mb-6"><div><h1 class="text-2xl font-bold text-gray-900">My patients</h1><p class="text-gray-500 text-sm mt-1">Select a patient to view entries or start a new ward round</p></div><div class="flex gap-2"><button onclick="openAddPatientModal()" class="btn-primary px-4 py-2.5 rounded-xl text-sm font-medium flex items-center gap-2"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>Add patient</button></div></div>
+<div id="patientGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+<div id="emptyState" class="hidden text-center py-20"><p class="text-gray-500 font-medium">No patients yet</p><p class="text-gray-400 text-sm mt-1">Add your first patient to get started</p></div>
 </div>
 
-<!-- ========== SCREEN 2: PATIENT RECORD ========== -->
 <div id="screen-patientRecord" class="screen fade-in">
-  <button onclick="showScreen('patientList')" class="text-sm text-blue-700 hover:text-blue-900 mb-4 flex items-center gap-1">
-    <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M15 19l-7-7 7-7"/></svg>
-    Back to patients
-  </button>
-  <div id="patientHeader" class="bg-white rounded-2xl p-6 border border-gray-200 mb-6"></div>
-  <div class="flex items-center justify-between mb-4">
-    <h2 class="text-lg font-semibold text-gray-800">Ward round entries</h2>
-    <button onclick="startNewEntry()" class="btn-primary px-4 py-2 rounded-xl text-sm font-medium flex items-center gap-2">
-      <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
-      New entry
-    </button>
-  </div>
-  <div id="entryTimeline"></div>
-  <div id="noEntries" class="hidden text-center py-12 bg-white rounded-2xl border border-gray-200">
-    <p class="text-gray-500">No entries yet — start your first ward round</p>
-  </div>
+<button onclick="showScreen('patientList')" class="text-sm text-blue-700 hover:text-blue-900 mb-4 flex items-center gap-1"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M15 19l-7-7 7-7"/></svg>Back to patients</button>
+<div id="patientHeader" class="bg-white rounded-2xl p-6 border border-gray-200 mb-6"></div>
+<div class="flex items-center justify-between mb-4"><h2 class="text-lg font-semibold text-gray-800">Ward round entries</h2><button onclick="startNewEntry()" class="btn-primary px-4 py-2 rounded-xl text-sm font-medium flex items-center gap-2"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>New entry</button></div>
+<div id="entryTimeline"></div>
+<div id="noEntries" class="hidden text-center py-12 bg-white rounded-2xl border border-gray-200"><p class="text-gray-500">No entries yet — start your first ward round</p></div>
 </div>
 
-<!-- ========== SCREEN 3: NEW / VIEW ENTRY ========== -->
 <div id="screen-entryForm" class="screen fade-in">
-  <button onclick="showScreen('patientRecord')" class="text-sm text-blue-700 hover:text-blue-900 mb-4 flex items-center gap-1">
-    <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M15 19l-7-7 7-7"/></svg>
-    Back to patient
-  </button>
+<button onclick="showScreen('patientRecord')" class="text-sm text-blue-700 hover:text-blue-900 mb-4 flex items-center gap-1"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M15 19l-7-7 7-7"/></svg>Back to patient</button>
+<div id="entryFormContent" class="space-y-6">
 
-  <div id="entryFormContent" class="space-y-6">
-    <!-- Section 1: Patient Details (auto-filled) -->
-    <section class="bg-white rounded-2xl p-6 border border-gray-200">
-      <h3 class="text-base font-semibold text-gray-800 mb-4 flex items-center gap-2">
-        <span class="w-6 h-6 bg-blue-100 text-blue-800 rounded-md flex items-center justify-center text-xs font-bold">1</span>
-        Patient details
-      </h3>
-      <div id="entryPatientDetails" class="grid grid-cols-2 sm:grid-cols-4 gap-4 text-sm"></div>
-    </section>
+<section class="bg-white rounded-2xl p-6 border border-gray-200"><h3 class="text-base font-semibold text-gray-800 mb-4 flex items-center gap-2"><span class="w-6 h-6 bg-blue-100 text-blue-800 rounded-md flex items-center justify-center text-xs font-bold">1</span>Patient details</h3><div id="entryPatientDetails" class="grid grid-cols-2 sm:grid-cols-4 gap-4 text-sm"></div></section>
 
-    <!-- Section 2: PMH & Presenting Complaint (AI summary) -->
-    <section class="bg-white rounded-2xl p-6 border border-gray-200">
-      <h3 class="text-base font-semibold text-gray-800 mb-1 flex items-center gap-2">
-        <span class="w-6 h-6 bg-blue-100 text-blue-800 rounded-md flex items-center justify-center text-xs font-bold">2</span>
-        PMH &amp; presenting complaint
-      </h3>
-      <p class="text-xs text-gray-400 mb-3" id="aiSummaryNote">Auto-generated from previous entries — editable</p>
-      <textarea id="fieldPMH" rows="4" class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-200 focus:border-blue-400" placeholder="Past medical history and presenting complaint..."></textarea>
-    </section>
+<section class="bg-white rounded-2xl p-6 border border-gray-200"><h3 class="text-base font-semibold text-gray-800 mb-1 flex items-center gap-2"><span class="w-6 h-6 bg-blue-100 text-blue-800 rounded-md flex items-center justify-center text-xs font-bold">2</span>PMH &amp; presenting complaint <span class="ai-badge ml-1" id="aiBadge">AI summary</span></h3><p class="text-xs text-gray-400 mb-3" id="aiSummaryNote">Auto-generated from previous entries</p><textarea id="fieldPMH" rows="5" class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-200 focus:border-blue-400" placeholder="Past medical history and presenting complaint..."></textarea></section>
 
-    <!-- Section 3: Today's Assessment -->
-    <section class="bg-white rounded-2xl p-6 border border-gray-200">
-      <h3 class="text-base font-semibold text-gray-800 mb-3 flex items-center gap-2">
-        <span class="w-6 h-6 bg-blue-100 text-blue-800 rounded-md flex items-center justify-center text-xs font-bold">3</span>
-        Today's assessment
-      </h3>
-      <textarea id="fieldAssessment" rows="5" class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-200 focus:border-blue-400" placeholder="Document findings from today's ward round..."></textarea>
-    </section>
+<section class="bg-white rounded-2xl p-6 border border-gray-200"><h3 class="text-base font-semibold text-gray-800 mb-3 flex items-center gap-2"><span class="w-6 h-6 bg-blue-100 text-blue-800 rounded-md flex items-center justify-center text-xs font-bold">3</span>Today's assessment</h3><textarea id="fieldAssessment" rows="5" class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-200 focus:border-blue-400" placeholder="Document findings from today's ward round..."></textarea></section>
 
-    <!-- Section 4: Examination Diagrams -->
-    <section class="bg-white rounded-2xl p-6 border border-gray-200">
-      <h3 class="text-base font-semibold text-gray-800 mb-4 flex items-center gap-2">
-        <span class="w-6 h-6 bg-blue-100 text-blue-800 rounded-md flex items-center justify-center text-xs font-bold">4</span>
-        Examination
-      </h3>
-      <div class="grid grid-cols-2 gap-4" id="diagramGrid">
-        <!-- Heart -->
-        <div>
-          <p class="text-sm font-medium text-gray-600 mb-2">Cardiovascular</p>
-          <div class="diagram-container" style="height:220px;">
-            <svg viewBox="0 0 200 200" class="w-full h-full p-4" style="pointer-events:none;">
-              <path d="M100 170 C60 130, 15 110, 20 70 C25 35, 55 25, 75 40 C85 48, 95 60, 100 75 C105 60, 115 48, 125 40 C145 25, 175 35, 180 70 C185 110, 140 130, 100 170Z" fill="none" stroke="#cbd5e1" stroke-width="1.5"/>
-              <text x="100" y="105" text-anchor="middle" font-size="10" fill="#94a3b8">Heart</text>
-            </svg>
-            <canvas class="drawing-canvas" data-diagram="heart"></canvas>
-          </div>
-          <div class="flex gap-1 mt-2" data-toolbar="heart"></div>
-        </div>
-        <!-- Lungs -->
-        <div>
-          <p class="text-sm font-medium text-gray-600 mb-2">Respiratory</p>
-          <div class="diagram-container" style="height:220px;">
-            <svg viewBox="0 0 200 200" class="w-full h-full p-4" style="pointer-events:none;">
-              <path d="M85 40 C85 40, 70 55, 55 80 C40 105, 30 140, 35 160 C38 170, 48 175, 60 170 C72 165, 80 150, 85 130 L85 40Z" fill="none" stroke="#cbd5e1" stroke-width="1.5"/>
-              <path d="M115 40 C115 40, 130 55, 145 80 C160 105, 170 140, 165 160 C162 170, 152 175, 140 170 C128 165, 120 150, 115 130 L115 40Z" fill="none" stroke="#cbd5e1" stroke-width="1.5"/>
-              <line x1="100" y1="30" x2="100" y2="55" stroke="#cbd5e1" stroke-width="1.5"/>
-              <line x1="100" y1="55" x2="85" y2="70" stroke="#cbd5e1" stroke-width="1"/>
-              <line x1="100" y1="55" x2="115" y2="70" stroke="#cbd5e1" stroke-width="1"/>
-              <text x="65" y="115" text-anchor="middle" font-size="9" fill="#94a3b8">R</text>
-              <text x="135" y="115" text-anchor="middle" font-size="9" fill="#94a3b8">L</text>
-            </svg>
-            <canvas class="drawing-canvas" data-diagram="lungs"></canvas>
-          </div>
-          <div class="flex gap-1 mt-2" data-toolbar="lungs"></div>
-        </div>
-        <!-- Abdomen -->
-        <div>
-          <p class="text-sm font-medium text-gray-600 mb-2">Gastrointestinal</p>
-          <div class="diagram-container" style="height:220px;">
-            <svg viewBox="0 0 200 200" class="w-full h-full p-4" style="pointer-events:none;">
-              <ellipse cx="100" cy="105" rx="65" ry="70" fill="none" stroke="#cbd5e1" stroke-width="1.5"/>
-              <line x1="55" y1="75" x2="145" y2="75" stroke="#e2e8f0" stroke-width="0.8"/>
-              <line x1="50" y1="130" x2="150" y2="130" stroke="#e2e8f0" stroke-width="0.8"/>
-              <line x1="80" y1="35" x2="80" y2="175" stroke="#e2e8f0" stroke-width="0.8"/>
-              <line x1="120" y1="35" x2="120" y2="175" stroke="#e2e8f0" stroke-width="0.8"/>
-              <text x="100" y="60" text-anchor="middle" font-size="7" fill="#94a3b8">Epigastric</text>
-              <text x="66" y="107" text-anchor="middle" font-size="7" fill="#94a3b8">R</text>
-              <text x="134" y="107" text-anchor="middle" font-size="7" fill="#94a3b8">L</text>
-              <circle cx="100" cy="105" r="2" fill="#cbd5e1"/>
-            </svg>
-            <canvas class="drawing-canvas" data-diagram="abdomen"></canvas>
-          </div>
-          <div class="flex gap-1 mt-2" data-toolbar="abdomen"></div>
-        </div>
-        <!-- Lower Limbs -->
-        <div>
-          <p class="text-sm font-medium text-gray-600 mb-2">Lower limbs</p>
-          <div class="diagram-container" style="height:220px;">
-            <svg viewBox="0 0 200 200" class="w-full h-full p-4" style="pointer-events:none;">
-              <path d="M60 20 C55 20, 45 30, 42 60 C39 90, 40 130, 42 155 C43 165, 50 180, 55 185 L70 185 C72 180, 75 170, 75 155 C75 130, 78 90, 78 60 C78 35, 70 20, 60 20Z" fill="none" stroke="#cbd5e1" stroke-width="1.5"/>
-              <path d="M140 20 C135 20, 125 30, 122 60 C119 90, 120 130, 122 155 C123 165, 130 180, 135 185 L150 185 C152 180, 155 170, 155 155 C155 130, 158 90, 158 60 C158 35, 150 20, 140 20Z" fill="none" stroke="#cbd5e1" stroke-width="1.5"/>
-              <text x="60" y="105" text-anchor="middle" font-size="9" fill="#94a3b8">R</text>
-              <text x="140" y="105" text-anchor="middle" font-size="9" fill="#94a3b8">L</text>
-            </svg>
-            <canvas class="drawing-canvas" data-diagram="limbs"></canvas>
-          </div>
-          <div class="flex gap-1 mt-2" data-toolbar="limbs"></div>
-        </div>
-      </div>
-    </section>
+<section class="bg-white rounded-2xl p-6 border border-gray-200"><h3 class="text-base font-semibold text-gray-800 mb-4 flex items-center gap-2"><span class="w-6 h-6 bg-blue-100 text-blue-800 rounded-md flex items-center justify-center text-xs font-bold">4</span>Examination</h3>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-4">
 
-    <!-- Section 5: Systems Review -->
-    <section class="bg-white rounded-2xl p-6 border border-gray-200">
-      <h3 class="text-base font-semibold text-gray-800 mb-3 flex items-center gap-2">
-        <span class="w-6 h-6 bg-blue-100 text-blue-800 rounded-md flex items-center justify-center text-xs font-bold">5</span>
-        Systems review
-      </h3>
-      <textarea id="fieldSystems" rows="4" class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-200 focus:border-blue-400" placeholder="CVS, Resp, GI, Neuro, MSK, Endo, Renal, Haem..."></textarea>
-    </section>
-
-    <!-- Section 6: Plan / Management -->
-    <section class="bg-white rounded-2xl p-6 border border-gray-200">
-      <h3 class="text-base font-semibold text-gray-800 mb-3 flex items-center gap-2">
-        <span class="w-6 h-6 bg-blue-100 text-blue-800 rounded-md flex items-center justify-center text-xs font-bold">6</span>
-        Plan / management
-      </h3>
-      <textarea id="fieldPlan" rows="5" class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-200 focus:border-blue-400" placeholder="Investigations, medications, referrals, escalation, discharge plans..."></textarea>
-    </section>
-
-    <!-- Section 7: Sign-off -->
-    <section class="bg-white rounded-2xl p-6 border border-gray-200">
-      <h3 class="text-base font-semibold text-gray-800 mb-4 flex items-center gap-2">
-        <span class="w-6 h-6 bg-blue-100 text-blue-800 rounded-md flex items-center justify-center text-xs font-bold">7</span>
-        Sign-off
-      </h3>
-      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div>
-          <label class="block text-xs font-medium text-gray-500 mb-1">Clinician name</label>
-          <input id="fieldSignName" type="text" class="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-200" placeholder="Dr...">
-        </div>
-        <div>
-          <label class="block text-xs font-medium text-gray-500 mb-1">Grade</label>
-          <select id="fieldSignGrade" class="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-200 bg-white">
-            <option value="">Select grade</option>
-            <option>FY1</option><option>FY2</option>
-            <option>CT1</option><option>CT2</option><option>CT3</option>
-            <option>ST1</option><option>ST2</option><option>ST3</option>
-            <option>ST4</option><option>ST5</option><option>ST6</option>
-            <option>ST7</option><option>ST8</option>
-            <option>SHO</option><option>Registrar</option>
-            <option>Consultant</option><option>GP</option>
-            <option>ANP</option><option>PA</option>
-          </select>
-        </div>
-        <div>
-          <label class="block text-xs font-medium text-gray-500 mb-1">Date</label>
-          <input id="fieldSignDate" type="date" class="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-200">
-        </div>
-      </div>
-    </section>
-
-    <!-- Save / Cancel -->
-    <div id="entryActions" class="flex gap-3 justify-end pb-8">
-      <button onclick="showScreen('patientRecord')" class="btn-secondary px-6 py-2.5 rounded-xl text-sm font-medium">Cancel</button>
-      <button onclick="saveEntry()" class="btn-primary px-6 py-2.5 rounded-xl text-sm font-medium">Save entry</button>
-    </div>
-  </div>
+<div><p class="text-sm font-medium text-gray-600 mb-2">Respiratory</p>
+<div class="diagram-container" style="height:240px">
+<svg viewBox="0 0 200 200" class="w-full h-full" style="pointer-events:none">
+  <path d="M 95 25 C 40 35, 30 120, 35 180 L 95 180 Z" fill="none" stroke="#94a3b8" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M 105 25 L 105 85 C 105 95, 115 105, 125 110 L 125 180 L 165 180 C 170 120, 160 35, 105 25 Z" fill="none" stroke="#94a3b8" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
+<canvas class="drawing-canvas" data-diagram="lungs"></canvas>
 </div>
+<div class="flex gap-1 mt-2" data-toolbar="lungs"></div>
+<div class="mt-3"><label class="block text-xs font-medium text-gray-500 mb-1">Heart sounds</label><input id="fieldHeartSounds" type="text" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-200" placeholder="e.g. HS I+II+0, no murmurs"></div>
+</div>
+
+<div><p class="text-sm font-medium text-gray-600 mb-2">Gastrointestinal</p>
+<div class="diagram-container" style="height:240px">
+<svg viewBox="0 0 200 200" class="w-full h-full" style="pointer-events:none">
+  <polygon points="100,40 152,70 152,130 100,160 48,130 48,70" fill="none" stroke="#94a3b8" stroke-width="2.5" stroke-linejoin="round"/>
+  <circle cx="100" cy="100" r="5" fill="none" stroke="#94a3b8" stroke-width="2.5"/>
+  <line x1="100" y1="40" x2="100" y2="15" stroke="#94a3b8" stroke-width="2.5" stroke-linecap="round"/>
+  <line x1="152" y1="70" x2="175" y2="57" stroke="#94a3b8" stroke-width="2.5" stroke-linecap="round"/>
+  <line x1="152" y1="130" x2="175" y2="143" stroke="#94a3b8" stroke-width="2.5" stroke-linecap="round"/>
+  <line x1="100" y1="160" x2="100" y2="185" stroke="#94a3b8" stroke-width="2.5" stroke-linecap="round"/>
+  <line x1="48" y1="130" x2="25" y2="143" stroke="#94a3b8" stroke-width="2.5" stroke-linecap="round"/>
+  <line x1="48" y1="70" x2="25" y2="57" stroke="#94a3b8" stroke-width="2.5" stroke-linecap="round"/>
+</svg>
+<canvas class="drawing-canvas" data-diagram="abdomen"></canvas>
+</div>
+<div class="flex gap-1 mt-2" data-toolbar="abdomen"></div>
+</div>
+
+<div><p class="text-sm font-medium text-gray-600 mb-2">Lower limbs</p>
+<div class="diagram-container" style="height:240px">
+<svg viewBox="0 0 200 200" class="w-full h-full" style="pointer-events:none">
+  <path d="M 75 25 L 70 140 C 70 145, 65 145, 60 145 L 30 145 C 10 145, 10 175, 40 175 L 80 175 C 95 175, 95 155, 95 140 L 95 25" fill="none" stroke="#94a3b8" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M 125 25 L 130 140 C 130 145, 135 145, 140 145 L 170 145 C 190 145, 190 175, 160 175 L 120 175 C 105 175, 105 155, 105 140 L 105 25" fill="none" stroke="#94a3b8" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="65" y="195" text-anchor="middle" font-size="12" font-weight="600" fill="#94a3b8">R</text>
+  <text x="135" y="195" text-anchor="middle" font-size="12" font-weight="600" fill="#94a3b8">L</text>
+</svg>
+<canvas class="drawing-canvas" data-diagram="limbs"></canvas>
+</div>
+<div class="flex gap-1 mt-2" data-toolbar="limbs"></div>
+</div>
+
+</div></section>
+
+<section class="bg-white rounded-2xl p-6 border border-gray-200"><h3 class="text-base font-semibold text-gray-800 mb-3 flex items-center gap-2"><span class="w-6 h-6 bg-blue-100 text-blue-800 rounded-md flex items-center justify-center text-xs font-bold">5</span>Systems review</h3><textarea id="fieldSystems" rows="4" class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-200 focus:border-blue-400" placeholder="CVS, Resp, GI, Neuro, MSK, Endo, Renal, Haem..."></textarea></section>
+
+<section class="bg-white rounded-2xl p-6 border border-gray-200"><h3 class="text-base font-semibold text-gray-800 mb-3 flex items-center gap-2"><span class="w-6 h-6 bg-blue-100 text-blue-800 rounded-md flex items-center justify-center text-xs font-bold">6</span>Plan / management</h3><textarea id="fieldPlan" rows="5" class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-200 focus:border-blue-400" placeholder="Investigations, medications, referrals, escalation, discharge plans..."></textarea></section>
+
+<section class="bg-white rounded-2xl p-6 border border-gray-200"><h3 class="text-base font-semibold text-gray-800 mb-4 flex items-center gap-2"><span class="w-6 h-6 bg-blue-100 text-blue-800 rounded-md flex items-center justify-center text-xs font-bold">7</span>Sign-off</h3><div class="grid grid-cols-1 sm:grid-cols-3 gap-4"><div><label class="block text-xs font-medium text-gray-500 mb-1">Clinician name</label><input id="fieldSignName" type="text" class="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-200" placeholder="Dr..."></div><div><label class="block text-xs font-medium text-gray-500 mb-1">Grade</label><select id="fieldSignGrade" class="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-200 bg-white"><option value="">Select</option><option>FY1</option><option>FY2</option><option>CT1</option><option>CT2</option><option>CT3</option><option>ST1</option><option>ST2</option><option>ST3</option><option>ST4</option><option>ST5</option><option>ST6</option><option>ST7</option><option>ST8</option><option>SHO</option><option>Registrar</option><option>Consultant</option><option>GP</option><option>ANP</option><option>PA</option></select></div><div><label class="block text-xs font-medium text-gray-500 mb-1">Date</label><input id="fieldSignDate" type="date" class="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-200"></div></div></section>
+
+<div id="entryActions" class="flex gap-3 justify-end pb-8"><button onclick="showScreen('patientRecord')" class="btn-secondary px-6 py-2.5 rounded-xl text-sm font-medium">Cancel</button><button onclick="saveEntry()" class="btn-primary px-6 py-2.5 rounded-xl text-sm font-medium">Save entry</button></div>
+</div></div>
 
 </main>
 
-<!-- Add Patient Modal -->
-<div id="addPatientModal" class="fixed inset-0 bg-black/40 z-50 flex items-center justify-center hidden">
-  <div class="bg-white rounded-2xl p-6 w-full max-w-md mx-4 fade-in">
-    <h2 class="text-lg font-semibold text-gray-800 mb-4">Add patient</h2>
-    <div class="space-y-3">
-      <div>
-        <label class="block text-xs font-medium text-gray-500 mb-1">Full name</label>
-        <input id="modalName" type="text" class="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-200" placeholder="e.g. John Smith">
-      </div>
-      <div class="grid grid-cols-2 gap-3">
-        <div>
-          <label class="block text-xs font-medium text-gray-500 mb-1">Hospital number</label>
-          <input id="modalID" type="text" class="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-200" placeholder="e.g. H1234567">
-        </div>
-        <div>
-          <label class="block text-xs font-medium text-gray-500 mb-1">NHS number</label>
-          <input id="modalNHS" type="text" class="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-200" placeholder="e.g. 943 476 5919">
-        </div>
-      </div>
-      <div class="grid grid-cols-2 gap-3">
-        <div>
-          <label class="block text-xs font-medium text-gray-500 mb-1">Date of birth</label>
-          <input id="modalDOB" type="date" class="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-200">
-        </div>
-        <div>
-          <label class="block text-xs font-medium text-gray-500 mb-1">Ward / bed</label>
-          <input id="modalWard" type="text" class="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-200" placeholder="e.g. 4B / Bed 12">
-        </div>
-      </div>
-      <div>
-        <label class="block text-xs font-medium text-gray-500 mb-1">Consultant</label>
-        <input id="modalConsultant" type="text" class="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-200" placeholder="e.g. Dr Patel">
-      </div>
-    </div>
-    <div class="flex gap-3 justify-end mt-6">
-      <button onclick="closeAddPatientModal()" class="btn-secondary px-4 py-2 rounded-xl text-sm font-medium">Cancel</button>
-      <button onclick="addPatient()" class="btn-primary px-4 py-2 rounded-xl text-sm font-medium">Add patient</button>
-    </div>
-  </div>
-</div>
+<div id="addPatientModal" class="fixed inset-0 bg-black/40 z-50 flex items-center justify-center hidden"><div class="bg-white rounded-2xl p-6 w-full max-w-md mx-4 fade-in"><h2 class="text-lg font-semibold text-gray-800 mb-4">Add patient</h2><div class="space-y-3"><div><label class="block text-xs font-medium text-gray-500 mb-1">Full name</label><input id="modalName" type="text" class="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-200" placeholder="e.g. John Smith"></div><div class="grid grid-cols-2 gap-3"><div><label class="block text-xs font-medium text-gray-500 mb-1">Hospital number</label><input id="modalID" type="text" class="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-200" placeholder="e.g. H1234567"></div><div><label class="block text-xs font-medium text-gray-500 mb-1">NHS number</label><input id="modalNHS" type="text" class="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-200" placeholder="e.g. 943 476 5919"></div></div><div class="grid grid-cols-2 gap-3"><div><label class="block text-xs font-medium text-gray-500 mb-1">Date of birth</label><input id="modalDOB" type="date" class="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-200"></div><div><label class="block text-xs font-medium text-gray-500 mb-1">Ward / bed</label><input id="modalWard" type="text" class="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-200" placeholder="e.g. 4B / Bed 12"></div></div><div><label class="block text-xs font-medium text-gray-500 mb-1">Consultant</label><input id="modalConsultant" type="text" class="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-200" placeholder="e.g. Dr Patel"></div></div><div class="flex gap-3 justify-end mt-6"><button onclick="closeAddPatientModal()" class="btn-secondary px-4 py-2 rounded-xl text-sm font-medium">Cancel</button><button onclick="addPatient()" class="btn-primary px-4 py-2 rounded-xl text-sm font-medium">Add patient</button></div></div></div>
 
 <script>
-// ===== DATA LAYER =====
-function getData() {
-  return JSON.parse(localStorage.getItem('wardRoundData') || '{"patients":[],"entries":[]}');
-}
-function saveData(data) {
-  localStorage.setItem('wardRoundData', JSON.stringify(data));
-}
+function getData(){return JSON.parse(localStorage.getItem('wardRoundData')||'{"patients":[],"entries":[]}')}
+function saveData(d){localStorage.setItem('wardRoundData',JSON.stringify(d))}
+let currentPatientId=null,currentEntryId=null,isViewMode=false,drawingState={};
 
-let currentPatientId = null;
-let currentEntryId = null;
-let isViewMode = false;
-let drawingState = {};
-
-// ===== SCREEN NAVIGATION =====
-function showScreen(name) {
-  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-  document.getElementById('screen-' + name).classList.add('active');
-  window.scrollTo(0, 0);
-
-  if (name === 'patientList') renderPatientList();
-  if (name === 'patientRecord') renderPatientRecord();
-}
-
-// ===== PATIENT LIST =====
-function renderPatientList() {
-  const data = getData();
-  const grid = document.getElementById('patientGrid');
-  const empty = document.getElementById('emptyState');
-
-  if (data.patients.length === 0) {
-    grid.innerHTML = '';
-    empty.classList.remove('hidden');
-    return;
-  }
-  empty.classList.add('hidden');
-
-  grid.innerHTML = data.patients.map(p => {
-    const entryCount = data.entries.filter(e => e.patientId === p.id).length;
-    const lastEntry = data.entries.filter(e => e.patientId === p.id).sort((a,b) => new Date(b.date) - new Date(a.date))[0];
-    return `
-      <div class="bg-white rounded-2xl p-5 border border-gray-200 cursor-pointer entry-card transition-all" onclick="openPatient('${p.id}')">
-        <div class="flex items-start justify-between mb-3">
-          <div class="w-10 h-10 bg-blue-50 rounded-xl flex items-center justify-center text-blue-700 font-semibold text-sm">
-            ${p.name.split(' ').map(n=>n[0]).join('').toUpperCase()}
-          </div>
-          <span class="badge bg-gray-100 text-gray-600">${entryCount} ${entryCount===1?'entry':'entries'}</span>
-        </div>
-        <h3 class="font-semibold text-gray-900">${p.name}</h3>
-        <p class="text-xs text-gray-500 mt-1">${p.hospitalId} · ${p.ward || 'No ward'}</p>
-        ${lastEntry ? `<p class="text-xs text-gray-400 mt-2">Last entry: ${new Date(lastEntry.date).toLocaleDateString('en-GB')}</p>` : ''}
-      </div>
-    `;
-  }).join('');
+function seedMockData(){
+const data=getData();
+if(data.patients.find(p=>p.id==='pt_mock_001'))return;
+const pid='pt_mock_001';
+data.patients.push({id:pid,name:'Margaret Thompson',hospitalId:'H7291034',nhsNumber:'432 891 7654',dob:'1951-03-14',ward:'Ward 6 / Bed 4',consultant:'Dr Patel'});
+const d1=new Date();d1.setDate(d1.getDate()-3);
+data.entries.push({id:'ent_m1',patientId:pid,date:d1.toISOString().split('T')[0],
+pmh:'PMH: Type 2 diabetes mellitus, hypertension, atrial fibrillation (on apixaban), COPD (ex-smoker, 30 pack-years), osteoarthritis bilateral knees.\n\nPresenting complaint: 3-day history of productive cough with green sputum, increasing breathlessness (now at rest), and fever (38.4C at home). GP started amoxicillin 5 days ago with no improvement. Reduced oral intake over 48 hours.',
+assessment:'Day 1 post-admission. Admitted via ED with community-acquired pneumonia (CURB-65 score 3). Started on IV co-amoxiclav 1.2g TDS and clarithromycin 500mg BD. O2 requirements: 2L via nasal cannulae to maintain SpO2 94%. CXR shows right lower lobe consolidation. NEWS2 score 5 on admission.\n\nBloods: WCC 15.2, CRP 187, lactate 1.8, creatinine 98 (baseline 82). Blood cultures sent. Sputum culture sent.',
+heartSounds:'Irregularly irregular, no murmurs',
+systems:'CVS: AF rate controlled (HR 82). Resp: Bilateral air entry, crackles right base, no wheeze. GI: Abdomen soft, non-tender, bowels not yet open. Neuro: GCS 15, alert and orientated. Renal: Catheterised, output 35ml/hr.',
+plan:'1. Continue IV co-amoxiclav + clarithromycin\n2. IV fluids - 0.9% NaCl 1L over 8 hours\n3. Nebulised salbutamol 2.5mg QDS PRN\n4. DVT prophylaxis - continue apixaban (therapeutic dose for AF)\n5. Blood glucose monitoring QDS\n6. Chase blood cultures and sputum culture tomorrow\n7. Repeat bloods in 48 hours (CRP, WCC, U&Es)\n8. Physio referral for chest clearance\n9. Aim: IV to oral switch at 48 hours if improving',
+signName:'Dr Omarjee',signGrade:'FY1',drawings:{}});
+const d2=new Date();d2.setDate(d2.getDate()-2);
+data.entries.push({id:'ent_m2',patientId:pid,date:d2.toISOString().split('T')[0],
+pmh:'PMH: Type 2 diabetes mellitus, hypertension, atrial fibrillation (on apixaban), COPD (ex-smoker, 30 pack-years), osteoarthritis bilateral knees.\n\nPresenting complaint: Community-acquired pneumonia (right lower lobe). Admitted 2 days ago with productive cough, breathlessness, and fever. CURB-65 score 3 on admission.',
+assessment:'Day 2 post-admission. Clinically improving. Temperature settled overnight (Tmax 37.3). O2 requirements reduced - now on room air, SpO2 96%. Cough still productive but less frequent. Eating and drinking better. NEWS2 score 2.\n\nBloods (today): WCC 11.8 (down from 15.2), CRP 124 (down from 187), creatinine 88 (improving). Blood cultures: no growth at 48 hours. Sputum culture: Streptococcus pneumoniae - sensitive to amoxicillin.',
+heartSounds:'Irregularly irregular, no murmurs',
+systems:'CVS: AF, rate controlled HR 78. Resp: Air entry improving, crackles right base reducing, no wheeze. SpO2 96% on air. GI: Abdomen soft, bowels opened. Neuro: GCS 15. Renal: Good urine output, catheter removed.',
+plan:'1. IV to oral switch TODAY - amoxicillin 500mg TDS + clarithromycin 500mg BD (5 more days)\n2. Stop IV fluids - tolerating oral intake\n3. Continue nebs PRN\n4. Physio to continue chest clearance\n5. Repeat CRP in 48 hours\n6. If continues to improve, plan discharge in 24-48 hours\n7. Pre-discharge: check mobility with physio, ensure GP follow-up',
+signName:'Dr Omarjee',signGrade:'FY1',drawings:{}});
+const d3=new Date();d3.setDate(d3.getDate()-1);
+data.entries.push({id:'ent_m3',patientId:pid,date:d3.toISOString().split('T')[0],
+pmh:'PMH: Type 2 diabetes mellitus, hypertension, atrial fibrillation (on apixaban), COPD (ex-smoker, 30 pack-years), osteoarthritis bilateral knees.\n\nPresenting complaint: Community-acquired pneumonia (right lower lobe). Admitted 3 days ago. On oral antibiotics since yesterday. Clinically improving.',
+assessment:'Day 3 post-admission. Continued improvement. Apyrexial for 48 hours. SpO2 97% on room air consistently. Cough improving, sputum clearing. Mobilising to toilet independently with frame. Eating well.\n\nBloods (today): CRP 54 (down from 124). WCC 9.2 (normalised). U&Es normal.',
+heartSounds:'Irregularly irregular, no murmurs',
+systems:'CVS: AF, rate controlled. Resp: Good air entry bilaterally, minimal crackles right base. GI: Eating well, bowels regular. Neuro: GCS 15, bright and engaging. MSK: Mobilising with frame, physio happy with progress.',
+plan:'1. Continue oral amoxicillin + clarithromycin (3 days remaining)\n2. Medically fit for discharge TODAY\n3. Discharge checklist:\n   - TTO medications prepared\n   - GP letter dictated\n   - Follow-up CXR in 6 weeks (request sent)\n   - Patient education: complete antibiotic course\n4. Ensure family aware of discharge\n5. Discharge expected by 14:00',
+signName:'Dr Omarjee',signGrade:'FY1',drawings:{}});
+saveData(data);
 }
 
-// ===== ADD PATIENT =====
-function openAddPatientModal() { document.getElementById('addPatientModal').classList.remove('hidden'); }
-function closeAddPatientModal() {
-  document.getElementById('addPatientModal').classList.add('hidden');
-  ['modalName','modalID','modalNHS','modalDOB','modalWard','modalConsultant'].forEach(id => document.getElementById(id).value = '');
+function generateAISummary(entries){
+if(entries.length===0)return '';
+const lines=[];
+const pmhE=entries.find(e=>e.pmh&&e.pmh.includes('PMH:'));
+if(pmhE){const m=pmhE.pmh.match(/PMH:([^\n]+)/);if(m)lines.push('PMH:'+m[1].trim())}
+const pcE=entries.find(e=>e.pmh&&e.pmh.toLowerCase().includes('presenting complaint'));
+if(pcE){const m=pcE.pmh.match(/[Pp]resenting complaint[:\s]+([^\n]+)/);if(m)lines.push('\nPresenting complaint: '+m[1].trim())}
+if(entries.length>=2){
+lines.push('\n--- Hospital course summary ---');
+const adm=entries[entries.length-1],lat=entries[0];
+const days=Math.round((new Date(lat.date)-new Date(adm.date))/864e5)+1;
+lines.push('Day '+(days+1)+' of admission.');
+const all=entries.map(e=>e.assessment||'').join(' ').toLowerCase();
+if(all.includes('improving')||all.includes('improvement'))lines.push('Trend: Clinically improving.');
+else if(all.includes('deteriorat')||all.includes('worsening'))lines.push('Trend: Clinical concern - deterioration noted.');
+else lines.push('Trend: Stable.');
+const o2=lat.assessment&&lat.assessment.match(/SpO2\s*(\d+)%?\s*(on\s+[\w\s]+)?/i);
+if(o2)lines.push('O2: SpO2 '+o2[1]+'% '+(o2[2]||'').trim());
+const crp=lat.assessment&&lat.assessment.match(/CRP\s*([\d.]+)/i);
+const wcc=lat.assessment&&lat.assessment.match(/WCC\s*([\d.]+)/i);
+if(crp||wcc){let b='Latest bloods:';if(wcc)b+=' WCC '+wcc[1];if(crp)b+=(wcc?',':'')+' CRP '+crp[1];lines.push(b)}
+}
+const planE=entries.find(e=>e.plan&&e.plan.trim().length>20);
+if(planE){lines.push('\n--- Last documented plan ---');planE.plan.split('\n').filter(l=>l.trim()).slice(0,5).forEach(l=>lines.push(l.trim()));if(planE.plan.split('\n').filter(l=>l.trim()).length>5)lines.push('(...continued)')}
+return lines.join('\n');
 }
 
-function addPatient() {
-  const name = document.getElementById('modalName').value.trim();
-  const hospitalId = document.getElementById('modalID').value.trim();
-  if (!name) return alert('Please enter a patient name.');
-
-  const data = getData();
-  data.patients.push({
-    id: 'pt_' + Date.now(),
-    name,
-    hospitalId: hospitalId || 'N/A',
-    nhsNumber: document.getElementById('modalNHS').value.trim(),
-    dob: document.getElementById('modalDOB').value,
-    ward: document.getElementById('modalWard').value.trim(),
-    consultant: document.getElementById('modalConsultant').value.trim(),
-  });
-  saveData(data);
-  closeAddPatientModal();
-  renderPatientList();
+function showScreen(n){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById('screen-'+n).classList.add('active');window.scrollTo(0,0);if(n==='patientList')renderPatientList();if(n==='patientRecord')renderPatientRecord()}
+function renderPatientList(){
+const data=getData(),g=document.getElementById('patientGrid'),e=document.getElementById('emptyState');
+if(data.patients.length===0){g.innerHTML='';e.classList.remove('hidden');return}e.classList.add('hidden');
+g.innerHTML=data.patients.map(p=>{const ec=data.entries.filter(e=>e.patientId===p.id).length;const last=data.entries.filter(e=>e.patientId===p.id).sort((a,b)=>new Date(b.date)-new Date(a.date))[0];return`<div class="bg-white rounded-2xl p-5 border border-gray-200 cursor-pointer entry-card transition-all" onclick="openPatient('${p.id}')"><div class="flex items-start justify-between mb-3"><div class="w-10 h-10 bg-blue-50 rounded-xl flex items-center justify-center text-blue-700 font-semibold text-sm">${p.name.split(' ').map(n=>n[0]).join('').toUpperCase()}</div><span class="badge bg-gray-100 text-gray-600">${ec} ${ec===1?'entry':'entries'}</span></div><h3 class="font-semibold text-gray-900">${p.name}</h3><p class="text-xs text-gray-500 mt-1">${p.hospitalId} · ${p.ward||'No ward'}</p>${last?`<p class="text-xs text-gray-400 mt-2">Last entry: ${new Date(last.date).toLocaleDateString('en-GB')}</p>`:''}</div>`}).join('')}
+function openAddPatientModal(){document.getElementById('addPatientModal').classList.remove('hidden')}
+function closeAddPatientModal(){document.getElementById('addPatientModal').classList.add('hidden');['modalName','modalID','modalNHS','modalDOB','modalWard','modalConsultant'].forEach(id=>document.getElementById(id).value='')}
+function addPatient(){const n=document.getElementById('modalName').value.trim();if(!n)return alert('Please enter a patient name.');const data=getData();data.patients.push({id:'pt_'+Date.now(),name:n,hospitalId:document.getElementById('modalID').value.trim()||'N/A',nhsNumber:document.getElementById('modalNHS').value.trim(),dob:document.getElementById('modalDOB').value,ward:document.getElementById('modalWard').value.trim(),consultant:document.getElementById('modalConsultant').value.trim()});saveData(data);closeAddPatientModal();renderPatientList()}
+function openPatient(id){currentPatientId=id;showScreen('patientRecord')}
+function renderPatientRecord(){
+const data=getData(),p=data.patients.find(p=>p.id===currentPatientId);if(!p)return showScreen('patientList');
+const age=p.dob?Math.floor((Date.now()-new Date(p.dob))/31557600000):'--';
+document.getElementById('patientHeader').innerHTML=`<div class="flex items-center justify-between"><div><h2 class="text-xl font-bold text-gray-900">${p.name}</h2><p class="text-sm text-gray-500 mt-1">${p.hospitalId} · DOB: ${p.dob?new Date(p.dob).toLocaleDateString('en-GB'):'N/A'} (${age} yrs) · ${p.ward||'No ward'} · ${p.consultant||'No consultant'}</p></div><button onclick="deletePatient('${p.id}')" class="text-red-400 hover:text-red-600 text-xs">Delete</button></div>`;
+const entries=data.entries.filter(e=>e.patientId===currentPatientId).sort((a,b)=>new Date(b.date)-new Date(a.date));
+const tl=document.getElementById('entryTimeline'),ne=document.getElementById('noEntries');
+if(entries.length===0){tl.innerHTML='';ne.classList.remove('hidden');return}ne.classList.add('hidden');
+tl.innerHTML=entries.map(e=>`<div class="bg-white rounded-2xl p-5 border border-gray-200 mb-3 cursor-pointer entry-card transition-all" onclick="viewEntry('${e.id}')"><div class="flex items-center justify-between mb-2"><span class="font-semibold text-gray-800 text-sm">${new Date(e.date).toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short',year:'numeric'})}</span><span class="badge bg-blue-50 text-blue-700">${e.signGrade||'N/A'}</span></div><p class="text-sm text-gray-600 line-clamp-2">${e.assessment?e.assessment.substring(0,150)+(e.assessment.length>150?'...':''):'No assessment recorded'}</p><p class="text-xs text-gray-400 mt-2">Signed: ${e.signName||'Not signed'}</p></div>`).join('')}
+function deletePatient(id){if(!confirm('Delete this patient and all their entries?'))return;const data=getData();data.patients=data.patients.filter(p=>p.id!==id);data.entries=data.entries.filter(e=>e.patientId!==id);saveData(data);showScreen('patientList')}
+function startNewEntry(){currentEntryId=null;isViewMode=false;showScreen('entryForm');populateEntryForm()}
+function viewEntry(id){currentEntryId=id;isViewMode=true;showScreen('entryForm');populateEntryForm()}
+function populateEntryForm(){
+const data=getData(),p=data.patients.find(p=>p.id===currentPatientId);if(!p)return;
+const age=p.dob?Math.floor((Date.now()-new Date(p.dob))/31557600000):'--';
+document.getElementById('entryPatientDetails').innerHTML=`<div><span class="text-xs text-gray-400 block">Name</span><span class="font-medium text-gray-800">${p.name}</span></div><div><span class="text-xs text-gray-400 block">Hospital No.</span><span class="font-medium text-gray-800">${p.hospitalId}</span></div><div><span class="text-xs text-gray-400 block">DOB / Age</span><span class="font-medium text-gray-800">${p.dob?new Date(p.dob).toLocaleDateString('en-GB'):'N/A'} (${age})</span></div><div><span class="text-xs text-gray-400 block">Ward</span><span class="font-medium text-gray-800">${p.ward||'N/A'}</span></div>`;
+const prev=data.entries.filter(e=>e.patientId===currentPatientId).sort((a,b)=>new Date(b.date)-new Date(a.date));
+document.querySelectorAll('.drawing-canvas').forEach(c=>{const ctx=c.getContext('2d');if(ctx)ctx.clearRect(0,0,c.width,c.height)});
+if(currentEntryId){
+const entry=data.entries.find(e=>e.id===currentEntryId);if(!entry)return;
+document.getElementById('fieldPMH').value=entry.pmh||'';document.getElementById('fieldAssessment').value=entry.assessment||'';document.getElementById('fieldHeartSounds').value=entry.heartSounds||'';document.getElementById('fieldSystems').value=entry.systems||'';document.getElementById('fieldPlan').value=entry.plan||'';document.getElementById('fieldSignName').value=entry.signName||'';document.getElementById('fieldSignGrade').value=entry.signGrade||'';document.getElementById('fieldSignDate').value=entry.date||'';
+document.getElementById('aiBadge').style.display='none';document.getElementById('aiSummaryNote').textContent='Viewing saved entry'+(isViewMode?' (read-only)':'');
+if(isViewMode){document.querySelectorAll('#entryFormContent textarea, #entryFormContent input, #entryFormContent select').forEach(el=>el.setAttribute('disabled','true'));document.getElementById('entryActions').classList.add('hidden')}
+setTimeout(()=>{['lungs','abdomen','limbs'].forEach(d=>{if(entry.drawings&&entry.drawings[d]){const canvas=document.querySelector(`canvas[data-diagram="${d}"]`);if(canvas){const img=new Image();img.onload=()=>canvas.getContext('2d').drawImage(img,0,0);img.src=entry.drawings[d]}}})},150);
+}else{
+document.getElementById('fieldPMH').value=generateAISummary(prev);document.getElementById('fieldAssessment').value='';document.getElementById('fieldHeartSounds').value='';document.getElementById('fieldSystems').value='';document.getElementById('fieldPlan').value='';document.getElementById('fieldSignName').value='';document.getElementById('fieldSignGrade').value='';document.getElementById('fieldSignDate').value=new Date().toISOString().split('T')[0];
+document.querySelectorAll('#entryFormContent textarea, #entryFormContent input, #entryFormContent select').forEach(el=>el.removeAttribute('disabled'));document.getElementById('entryActions').classList.remove('hidden');
+document.getElementById('aiBadge').style.display=prev.length>0?'inline-block':'none';document.getElementById('aiSummaryNote').textContent=prev.length>0?'Auto-generated from previous entries - editable':'No previous entries to summarise';
 }
+setTimeout(initDrawingCanvases,150)}
+function saveEntry(){
+const data=getData(),drawings={};
+['lungs','abdomen','limbs'].forEach(d=>{const canvas=document.querySelector(`canvas[data-diagram="${d}"]`);if(canvas){const ctx=canvas.getContext('2d');const px=ctx.getImageData(0,0,canvas.width,canvas.height).data;if(px.some((v,i)=>i%4===3&&v>0))drawings[d]=canvas.toDataURL()}});
+const entry={id:currentEntryId||'ent_'+Date.now(),patientId:currentPatientId,date:document.getElementById('fieldSignDate').value||new Date().toISOString().split('T')[0],pmh:document.getElementById('fieldPMH').value,assessment:document.getElementById('fieldAssessment').value,heartSounds:document.getElementById('fieldHeartSounds').value,systems:document.getElementById('fieldSystems').value,plan:document.getElementById('fieldPlan').value,signName:document.getElementById('fieldSignName').value,signGrade:document.getElementById('fieldSignGrade').value,drawings};
+if(currentEntryId){const idx=data.entries.findIndex(e=>e.id===currentEntryId);if(idx>=0)data.entries[idx]=entry}else{data.entries.push(entry)}
+saveData(data);showScreen('patientRecord')}
+function initDrawingCanvases(){
+document.querySelectorAll('.drawing-canvas').forEach(canvas=>{
+const container=canvas.parentElement;canvas.width=container.offsetWidth;canvas.height=container.offsetHeight;
+const diagram=canvas.dataset.diagram,ctx=canvas.getContext('2d');let drawing=false;
+drawingState[diagram]={color:'#e24b4a',lineWidth:2,ctx,canvas};
+const toolbar=document.querySelector(`[data-toolbar="${diagram}"]`);
+if(toolbar){if(isViewMode){toolbar.innerHTML='';canvas.style.cursor='default';return}
+toolbar.innerHTML=`<button class="toolbar-btn active" onclick="setC('${diagram}','#e24b4a',this)"><div style="width:10px;height:10px;background:#e24b4a;border-radius:50%"></div></button><button class="toolbar-btn" onclick="setC('${diagram}','#1e40af',this)"><div style="width:10px;height:10px;background:#1e40af;border-radius:50%"></div></button><button class="toolbar-btn" onclick="setC('${diagram}','#16a34a',this)"><div style="width:10px;height:10px;background:#16a34a;border-radius:50%"></div></button><button class="toolbar-btn" onclick="setC('${diagram}','#1e293b',this)"><div style="width:10px;height:10px;background:#1e293b;border-radius:50%"></div></button><button class="toolbar-btn" onclick="clrD('${diagram}')" style="margin-left:auto"><svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg></button>`}
+function pos(e){const r=canvas.getBoundingClientRect();const cx=e.touches?e.touches[0].clientX:e.clientX;const cy=e.touches?e.touches[0].clientY:e.clientY;return{x:cx-r.left,y:cy-r.top}}
+function start(e){e.preventDefault();drawing=true;const p=pos(e);ctx.beginPath();ctx.moveTo(p.x,p.y)}
+function draw(e){if(!drawing)return;e.preventDefault();const p=pos(e);const s=drawingState[diagram];ctx.strokeStyle=s.color;ctx.lineWidth=s.lineWidth;ctx.lineCap='round';ctx.lineJoin='round';ctx.lineTo(p.x,p.y);ctx.stroke()}
+function stop(){drawing=false}
+canvas.addEventListener('mousedown',start);canvas.addEventListener('mousemove',draw);canvas.addEventListener('mouseup',stop);canvas.addEventListener('mouseleave',stop);
+canvas.addEventListener('touchstart',start,{passive:false});canvas.addEventListener('touchmove',draw,{passive:false});canvas.addEventListener('touchend',stop)})}
+function setC(d,c,btn){drawingState[d].color=c;btn.closest('.flex').querySelectorAll('.toolbar-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active')}
+function clrD(d){const s=drawingState[d];if(s)s.ctx.clearRect(0,0,s.canvas.width,s.canvas.height)}
 
-// ===== PATIENT RECORD =====
-function openPatient(id) {
-  currentPatientId = id;
-  showScreen('patientRecord');
-}
-
-function renderPatientRecord() {
-  const data = getData();
-  const patient = data.patients.find(p => p.id === currentPatientId);
-  if (!patient) return showScreen('patientList');
-
-  const header = document.getElementById('patientHeader');
-  const age = patient.dob ? Math.floor((Date.now() - new Date(patient.dob)) / 31557600000) : '—';
-  header.innerHTML = `
-    <div class="flex items-center justify-between">
-      <div>
-        <h2 class="text-xl font-bold text-gray-900">${patient.name}</h2>
-        <p class="text-sm text-gray-500 mt-1">
-          ${patient.hospitalId} · DOB: ${patient.dob ? new Date(patient.dob).toLocaleDateString('en-GB') : 'N/A'} (${age} yrs) · ${patient.ward || 'No ward'} · ${patient.consultant || 'No consultant'}
-        </p>
-      </div>
-      <button onclick="deletePatient('${patient.id}')" class="text-red-400 hover:text-red-600 text-xs">Delete</button>
-    </div>
-  `;
-
-  const entries = data.entries.filter(e => e.patientId === currentPatientId).sort((a,b) => new Date(b.date) - new Date(a.date));
-  const timeline = document.getElementById('entryTimeline');
-  const noEntries = document.getElementById('noEntries');
-
-  if (entries.length === 0) {
-    timeline.innerHTML = '';
-    noEntries.classList.remove('hidden');
-    return;
-  }
-  noEntries.classList.add('hidden');
-
-  timeline.innerHTML = entries.map(e => `
-    <div class="bg-white rounded-2xl p-5 border border-gray-200 mb-3 cursor-pointer entry-card transition-all" onclick="viewEntry('${e.id}')">
-      <div class="flex items-center justify-between mb-2">
-        <span class="font-semibold text-gray-800 text-sm">${new Date(e.date).toLocaleDateString('en-GB', {weekday:'short', day:'numeric', month:'short', year:'numeric'})}</span>
-        <span class="badge bg-blue-50 text-blue-700">${e.signGrade || 'N/A'}</span>
-      </div>
-      <p class="text-sm text-gray-600 line-clamp-2">${e.assessment ? e.assessment.substring(0, 120) + (e.assessment.length > 120 ? '...' : '') : 'No assessment recorded'}</p>
-      <p class="text-xs text-gray-400 mt-2">Signed: ${e.signName || 'Not signed'}</p>
-    </div>
-  `).join('');
-}
-
-function deletePatient(id) {
-  if (!confirm('Delete this patient and all their entries?')) return;
-  const data = getData();
-  data.patients = data.patients.filter(p => p.id !== id);
-  data.entries = data.entries.filter(e => e.patientId !== id);
-  saveData(data);
-  showScreen('patientList');
-}
-
-// ===== NEW ENTRY =====
-function startNewEntry() {
-  currentEntryId = null;
-  isViewMode = false;
-  showScreen('entryForm');
-  populateEntryForm();
-}
-
-function populateEntryForm() {
-  const data = getData();
-  const patient = data.patients.find(p => p.id === currentPatientId);
-  if (!patient) return;
-
-  const age = patient.dob ? Math.floor((Date.now() - new Date(patient.dob)) / 31557600000) : '—';
-  document.getElementById('entryPatientDetails').innerHTML = `
-    <div><span class="text-xs text-gray-400 block">Name</span><span class="font-medium text-gray-800">${patient.name}</span></div>
-    <div><span class="text-xs text-gray-400 block">Hospital No.</span><span class="font-medium text-gray-800">${patient.hospitalId}</span></div>
-    <div><span class="text-xs text-gray-400 block">DOB / Age</span><span class="font-medium text-gray-800">${patient.dob ? new Date(patient.dob).toLocaleDateString('en-GB') : 'N/A'} (${age})</span></div>
-    <div><span class="text-xs text-gray-400 block">Ward</span><span class="font-medium text-gray-800">${patient.ward || 'N/A'}</span></div>
-  `;
-
-  // AI Summary from previous entries
-  const prevEntries = data.entries.filter(e => e.patientId === currentPatientId).sort((a,b) => new Date(b.date) - new Date(a.date));
-
-  if (currentEntryId) {
-    // Viewing existing entry
-    const entry = data.entries.find(e => e.id === currentEntryId);
-    if (!entry) return;
-    document.getElementById('fieldPMH').value = entry.pmh || '';
-    document.getElementById('fieldAssessment').value = entry.assessment || '';
-    document.getElementById('fieldSystems').value = entry.systems || '';
-    document.getElementById('fieldPlan').value = entry.plan || '';
-    document.getElementById('fieldSignName').value = entry.signName || '';
-    document.getElementById('fieldSignGrade').value = entry.signGrade || '';
-    document.getElementById('fieldSignDate').value = entry.date || '';
-
-    if (isViewMode) {
-      document.querySelectorAll('#entryFormContent textarea, #entryFormContent input, #entryFormContent select').forEach(el => el.setAttribute('disabled', 'true'));
-      document.getElementById('entryActions').classList.add('hidden');
-      document.getElementById('aiSummaryNote').textContent = 'Viewing saved entry (read-only)';
-    }
-
-    // Restore drawings
-    setTimeout(() => {
-      ['heart','lungs','abdomen','limbs'].forEach(d => {
-        if (entry.drawings && entry.drawings[d]) {
-          const canvas = document.querySelector(`canvas[data-diagram="${d}"]`);
-          if (canvas) {
-            const img = new Image();
-            img.onload = () => canvas.getContext('2d').drawImage(img, 0, 0);
-            img.src = entry.drawings[d];
-          }
-        }
-      });
-    }, 100);
-  } else {
-    // New entry — generate AI summary
-    document.getElementById('fieldPMH').value = generateAISummary(prevEntries);
-    document.getElementById('fieldAssessment').value = '';
-    document.getElementById('fieldSystems').value = '';
-    document.getElementById('fieldPlan').value = '';
-    document.getElementById('fieldSignName').value = '';
-    document.getElementById('fieldSignGrade').value = '';
-    document.getElementById('fieldSignDate').value = new Date().toISOString().split('T')[0];
-    document.querySelectorAll('#entryFormContent textarea, #entryFormContent input, #entryFormContent select').forEach(el => el.removeAttribute('disabled'));
-    document.getElementById('entryActions').classList.remove('hidden');
-    document.getElementById('aiSummaryNote').textContent = 'Auto-generated from previous entries — editable';
-  }
-
-  // Init drawing canvases
-  setTimeout(initDrawingCanvases, 100);
-}
-
-function viewEntry(id) {
-  currentEntryId = id;
-  isViewMode = true;
-  showScreen('entryForm');
-  populateEntryForm();
-}
-
-// ===== AI SUMMARY GENERATOR =====
-function generateAISummary(entries) {
-  if (entries.length === 0) return '';
-
-  const latest = entries[0];
-  let summary = '';
-
-  // Pull PMH from most recent entry that has it
-  const withPMH = entries.find(e => e.pmh && e.pmh.trim());
-  if (withPMH) {
-    const pmhLines = withPMH.pmh.split('\n').filter(l => l.trim());
-    summary += pmhLines.join('\n') + '\n\n';
-  }
-
-  // Summarise recent assessments
-  const recentEntries = entries.slice(0, 3);
-  if (recentEntries.some(e => e.assessment)) {
-    summary += '--- Recent progress ---\n';
-    recentEntries.forEach(e => {
-      if (e.assessment) {
-        const dateStr = new Date(e.date).toLocaleDateString('en-GB', {day:'numeric', month:'short'});
-        const shortAssessment = e.assessment.substring(0, 200).trim();
-        summary += `${dateStr}: ${shortAssessment}\n`;
-      }
-    });
-  }
-
-  // Pull latest plan
-  const withPlan = entries.find(e => e.plan && e.plan.trim());
-  if (withPlan) {
-    summary += '\n--- Last plan ---\n' + withPlan.plan.substring(0, 300).trim();
-  }
-
-  return summary.trim();
-}
-
-// ===== SAVE ENTRY =====
-function saveEntry() {
-  const data = getData();
-  const drawings = {};
-  ['heart','lungs','abdomen','limbs'].forEach(d => {
-    const canvas = document.querySelector(`canvas[data-diagram="${d}"]`);
-    if (canvas) {
-      const ctx = canvas.getContext('2d');
-      const px = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
-      const hasDrawing = px.some((v, i) => i % 4 === 3 && v > 0);
-      if (hasDrawing) drawings[d] = canvas.toDataURL();
-    }
-  });
-
-  const entry = {
-    id: currentEntryId || 'ent_' + Date.now(),
-    patientId: currentPatientId,
-    date: document.getElementById('fieldSignDate').value || new Date().toISOString().split('T')[0],
-    pmh: document.getElementById('fieldPMH').value,
-    assessment: document.getElementById('fieldAssessment').value,
-    systems: document.getElementById('fieldSystems').value,
-    plan: document.getElementById('fieldPlan').value,
-    signName: document.getElementById('fieldSignName').value,
-    signGrade: document.getElementById('fieldSignGrade').value,
-    drawings,
-  };
-
-  if (currentEntryId) {
-    const idx = data.entries.findIndex(e => e.id === currentEntryId);
-    if (idx >= 0) data.entries[idx] = entry;
-  } else {
-    data.entries.push(entry);
-  }
-
-  saveData(data);
-  showScreen('patientRecord');
-}
-
-// ===== DRAWING SYSTEM =====
-function initDrawingCanvases() {
-  document.querySelectorAll('.drawing-canvas').forEach(canvas => {
-    const container = canvas.parentElement;
-    canvas.width = container.offsetWidth;
-    canvas.height = container.offsetHeight;
-
-    const diagram = canvas.dataset.diagram;
-    const ctx = canvas.getContext('2d');
-    let drawing = false;
-    let color = '#e24b4a';
-    let lineWidth = 2;
-
-    drawingState[diagram] = { color, lineWidth, ctx, canvas };
-
-    // Build toolbar
-    const toolbar = document.querySelector(`[data-toolbar="${diagram}"]`);
-    if (toolbar && !isViewMode) {
-      toolbar.innerHTML = `
-        <button class="toolbar-btn active" onclick="setDrawColor('${diagram}', '#e24b4a', this)" title="Red"><div style="width:12px;height:12px;background:#e24b4a;border-radius:50%;"></div></button>
-        <button class="toolbar-btn" onclick="setDrawColor('${diagram}', '#1e40af', this)" title="Blue"><div style="width:12px;height:12px;background:#1e40af;border-radius:50%;"></div></button>
-        <button class="toolbar-btn" onclick="setDrawColor('${diagram}', '#16a34a', this)" title="Green"><div style="width:12px;height:12px;background:#16a34a;border-radius:50%;"></div></button>
-        <button class="toolbar-btn" onclick="setDrawColor('${diagram}', '#1e293b', this)" title="Black"><div style="width:12px;height:12px;background:#1e293b;border-radius:50%;"></div></button>
-        <button class="toolbar-btn" onclick="clearDrawing('${diagram}')" title="Clear" style="margin-left:auto;">
-          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
-        </button>
-      `;
-    }
-
-    if (isViewMode) {
-      canvas.style.cursor = 'default';
-      return;
-    }
-
-    function getPos(e) {
-      const rect = canvas.getBoundingClientRect();
-      const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-      const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-      return { x: clientX - rect.left, y: clientY - rect.top };
-    }
-
-    function startDraw(e) {
-      e.preventDefault();
-      drawing = true;
-      const pos = getPos(e);
-      ctx.beginPath();
-      ctx.moveTo(pos.x, pos.y);
-    }
-
-    function draw(e) {
-      if (!drawing) return;
-      e.preventDefault();
-      const pos = getPos(e);
-      const state = drawingState[diagram];
-      ctx.strokeStyle = state.color;
-      ctx.lineWidth = state.lineWidth;
-      ctx.lineCap = 'round';
-      ctx.lineJoin = 'round';
-      ctx.lineTo(pos.x, pos.y);
-      ctx.stroke();
-    }
-
-    function stopDraw() { drawing = false; }
-
-    canvas.addEventListener('mousedown', startDraw);
-    canvas.addEventListener('mousemove', draw);
-    canvas.addEventListener('mouseup', stopDraw);
-    canvas.addEventListener('mouseleave', stopDraw);
-    canvas.addEventListener('touchstart', startDraw, { passive: false });
-    canvas.addEventListener('touchmove', draw, { passive: false });
-    canvas.addEventListener('touchend', stopDraw);
-  });
-}
-
-function setDrawColor(diagram, color, btn) {
-  drawingState[diagram].color = color;
-  btn.closest('.flex').querySelectorAll('.toolbar-btn').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-}
-
-function clearDrawing(diagram) {
-  const state = drawingState[diagram];
-  if (state) state.ctx.clearRect(0, 0, state.canvas.width, state.canvas.height);
-}
-
-// ===== INIT =====
-renderPatientList();
+seedMockData();renderPatientList();
 </script>
-
 </body>
 </html>
