@@ -1,64 +1,88 @@
-# 🏥 Ward Round Documentation Template with AI Features
+# Ward Round Documentation Tool
 
-A modern, single-page clinical documentation template optimized for hospital ward rounds.  
-It pairs a responsive **frontend** for data entry/visualisation with a lightweight **Flask API** that generates concise, clinically-prioritised summaries.
+A browser-based clinical documentation tool for hospital ward rounds. Manages patients, stores entries over time, auto-generates summaries from previous notes, and includes drawable anatomical examination diagrams.
 
-> **🛑 Critical Disclaimer**  
-> This template is for **educational, demonstration, and conceptual** use only.  
-> It must **NOT** be used for clinical care, diagnosis, treatment, or official documentation.  
-> Always use authorised, validated, and secure hospital systems for real patient data.
+> **Disclaimer:** This is a portfolio/educational project. It must **not** be used for real clinical care or with real patient data. Always use authorised, validated hospital systems.
 
 ---
 
-## ✨ Key Features
+## Features
 
-### Frontend (`index.html`)
-- **Single-file app**: HTML + Tailwind CSS + vanilla JS (no build tools).
-- **Responsive UI**: Works on mobile, tablet, and desktop.
-- **Structured flow**: Patient Details → Daily Progress → Systems Review → Plan/Management → Sign-off.
-- **Anatomical diagrams** (HTML `<canvas>` + JS):
-  - **Respiratory (Lungs)**: smooth, symmetrical lung shapes (cardiac notch deliberately excluded).
-  - **Gastrointestinal (Abdomen)**: simple hexagon with central umbilicus.
-  - **Lower Limbs**: outlines of upper thighs for vascular/motor notes.
+**Patient management** — Add patients with hospital number, NHS number, DOB, ward, and consultant. View all patients from a single dashboard.
 
-### Backend (`app.py`) – AI-style Summarisation
-- **Clinical keyword prioritisation**: Scores and boosts sentences with terms like `antibiotic`, `discharge`, `blood culture`, `escalate`, `sepsis`, `IV`, `CXR`, etc.
-- **Concise output**: Returns a short, bulleted summary suitable for handovers.
-- **Simple API**: Single `POST /summarize` endpoint.
+**Entry timeline** — Every ward round entry is saved and timestamped. Click any past entry to review it. Entries are displayed in reverse chronological order.
 
----
+**Auto-filled templates** — Patient details (name, ID, DOB) carry forward automatically. PMH and presenting complaint are pre-populated from previous entries with a summary of recent assessments and the last documented plan.
 
-## 🗂 Project Structure
+**Drawable examination diagrams** — Four anatomical canvases (heart, lungs, abdomen, lower limbs) with multi-colour drawing tools. Annotations are saved with each entry and persist when viewing past records.
 
-.
-├─ index.html # Frontend: UI + Tailwind + Canvas drawings + fetch() calls
+**Structured documentation** — Each entry follows a consistent clinical format: Patient Details → PMH/PC → Assessment → Examination → Systems Review → Plan → Sign-off (name, grade, date).
 
-└─ app.py # Backend: Flask API + keyword-prioritised summariser
+**No server required** — Runs entirely in the browser. Data is stored in localStorage — no backend, no database, no login needed. Just open the file and start documenting.
 
-## 🚀 How to Run
+## Quickstart
 
-### 1) Start the backend (Flask)
-
-```
-(optional) activate venv first
-source .venv/bin/activate      # Windows: .venv\Scripts\activate
-pip install Flask flask-cors   # first time only
-python app.py
+```bash
+git clone https://github.com/M-Omarjee/ward-round-template.git
+cd ward-round-template
+open index.html
 ```
 
-### 2) Open the frontend
+Or simply double-click `index.html` in Finder. No installation, no dependencies, no build step.
 
-Just double-click index.html (or open it in the browser).
+## How It Works
 
-## 🧠 How the Summariser Works (Brief)
+| Layer | Technology | Purpose |
+|-------|-----------|---------|
+| **UI** | HTML + Tailwind CSS (CDN) | Responsive, modern interface |
+| **Logic** | Vanilla JavaScript | Screen navigation, data management, drawing |
+| **Storage** | localStorage | Patient data and entries persist between sessions |
+| **Diagrams** | SVG + Canvas overlay | Anatomical outlines with freehand drawing |
+| **Summaries** | Heuristic text extraction | Pulls PMH, recent assessments, and last plan from previous entries |
 
-Splits text into sentences.
-Applies priority scores to sentences containing clinically significant keywords (e.g., medications, investigations, escalation, discharge readiness).
-Sorts by score + recency; returns a short bulleted list.
-This is a deterministic heuristic, not a patient-data-trained model. It’s designed for demos and can be extended with real NLP/LLM later.
+## App Structure
 
-## 🔒 Privacy & Safety
-Do not use with real patient data.
+```
+Screen 1: Patient list
+  └─ Click patient → Screen 2
 
-## 🤝 Contributing
-PRs welcome! Good first issues: add keywords, improve diagrams, tidy UI, add tests, or wire up a simple persistence layer.
+Screen 2: Patient record (entry timeline)
+  ├─ Click entry → Screen 3 (read-only view)
+  └─ New entry → Screen 3 (editable form)
+
+Screen 3: Ward round entry
+  ├─ Patient details (auto-filled)
+  ├─ PMH & presenting complaint (auto-generated, editable)
+  ├─ Today's assessment (free text)
+  ├─ Examination diagrams (heart, lungs, abdomen, legs — drawable)
+  ├─ Systems review (free text)
+  ├─ Plan / management (free text)
+  └─ Sign-off (name, grade, date)
+```
+
+## Limitations
+
+- **localStorage only** — data lives in the browser. Clearing browser data will erase everything. Not suitable for multi-device or multi-user access.
+- **No authentication** — anyone with access to the browser can view the data.
+- **Heuristic summaries** — the auto-generated PMH/PC section uses simple text extraction, not a trained NLP model. In a production system this would use an LLM with appropriate clinical safeguards.
+- **Not validated** — this has not undergone clinical safety testing or NHS Digital assessment.
+
+## Next Steps
+
+1. **Backend + database** — Replace localStorage with a Flask/FastAPI backend and PostgreSQL for multi-device access
+2. **LLM-powered summaries** — Integrate an LLM (with appropriate guardrails) for clinically intelligent summarisation
+3. **User authentication** — Role-based access control (consultant vs FY1 vs nurse)
+4. **PDF export** — Generate printable ward round documentation
+5. **FHIR integration** — Connect to NHS FHIR APIs for real patient demographics
+
+## Technical Stack
+
+HTML · CSS (Tailwind) · JavaScript · Canvas API · localStorage
+
+## Author
+
+**Muhammed Omarjee** — Foundation Doctor (MBBS, King's College London 2023)
+
+## License
+
+[MIT](LICENSE)
